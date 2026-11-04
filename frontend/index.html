@@ -69,7 +69,7 @@
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
         <span>Documents</span>
-        <span class="nav-badge" id="sidebar-doc-count">3</span>
+        <span class="nav-badge" id="sidebar-doc-count">0</span>
       </a>
 
       <!-- 3. AI Assistant -->
@@ -114,7 +114,7 @@
         </div>
       </div>
       <div class="topbar-right">
-        <span class="doc-context-badge" id="topbar-doc-count">3 Docs</span>
+        <span class="doc-context-badge" id="topbar-doc-count">0 Docs</span>
         <button class="btn btn-primary btn-sm" id="topbar-upload-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           Upload Document
@@ -151,7 +151,7 @@
             </div>
             <div>
               <div class="stat-label">Uploaded Documents</div>
-              <div class="stat-value" id="dash-doc-count">3</div>
+              <div class="stat-value" id="dash-doc-count">0</div>
             </div>
           </div>
 
@@ -238,6 +238,14 @@
           <div>
             <h1 class="welcome-title" style="font-size: 1.4rem; margin-bottom: 0.2rem;">Document Vault &amp; Clause Analysis</h1>
             <p style="font-size: 0.85rem; color: #64748B;">Upload PDF or TXT legal files to parse clean text, translate clauses into actionable steps, and generate Before-You-Sign review checklists.</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="window.HELIOS_APP.loadSample()" title="Load a sample legal NDA agreement for demonstration">
+              📄 Load Sample NDA
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="window.HELIOS_APP.clearAll()" title="Remove all documents from vault" style="color: #DC2626; border-color: #FECACA;">
+              🗑️ Clear Vault
+            </button>
           </div>
         </div>
 

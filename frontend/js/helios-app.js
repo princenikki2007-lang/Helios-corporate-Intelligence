@@ -388,8 +388,18 @@
     if (state.documents.length === 0) {
       elements.dashRecentTable.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center; padding: 2rem; color: #64748B;">
-            No documents uploaded yet. Click <strong>Upload Document</strong> above to get started.
+          <td colspan="5" style="text-align: center; padding: 2.75rem 1.5rem; color: #64748B;">
+            <div style="font-size: 1.05rem; font-weight: 700; color: #1E293B; margin-bottom: 0.35rem;">No documents uploaded yet</div>
+            <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 1.25rem;">Upload your PDF or TXT legal agreement above to start analyzing clauses, obligations, and risks.</p>
+            <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('file-input').click()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Upload Document Now
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="window.HELIOS_APP.loadSample()">
+                📄 Load Sample NDA for Testing
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -446,13 +456,20 @@
 
     if (filtered.length === 0) {
       elements.docsList.innerHTML = `
-        <div style="text-align: center; padding: 3rem 1rem; background-color: #FFFFFF; border: 1px dashed #CBD5E1; border-radius: 10px;">
-          <p style="color: #64748B; font-size: 0.95rem; margin-bottom: 0.75rem;">
-            ${filterQuery ? 'No documents matched your search filter.' : 'No documents in the vault yet.'}
+        <div style="text-align: center; padding: 3rem 1.5rem; background-color: #FFFFFF; border: 1px dashed #CBD5E1; border-radius: 10px;">
+          <div style="font-size: 1.1rem; font-weight: 700; color: #0F172A; margin-bottom: 0.35rem;">
+            ${filterQuery ? 'No documents matched your search filter.' : 'Your Document Vault is Empty'}
+          </div>
+          <p style="color: #64748B; font-size: 0.875rem; margin-bottom: 1.25rem;">
+            ${filterQuery ? 'Try searching for a different keyword or filename.' : 'Upload any PDF or TXT legal contract, NDA, or policy agreement to begin.'}
           </p>
-          <button class="btn btn-primary btn-sm" onclick="document.getElementById('file-input').click()">
-            Upload Document Now
-          </button>
+          <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary btn-sm" onclick="document.getElementById('file-input').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Upload Document (.pdf, .txt)
+            </button>
+            ${!filterQuery ? '<button class="btn btn-secondary btn-sm" onclick="window.HELIOS_APP.loadSample()">📄 Load Sample NDA for Testing</button>' : ''}
+          </div>
         </div>
       `;
       return;
@@ -548,7 +565,7 @@
     }
   }
 
-  // File Upload Handler (PDF & TXT)
+  // File Upload Handler (PDF & TXT) with robust error protection
   async function handleFileUpload(file) {
     if (!file) return;
 
@@ -557,12 +574,12 @@
 
     // Validation
     if (ext !== '.pdf' && ext !== '.txt') {
-      showUploadAlert(`Invalid file format "${ext}". HELIOS accepts .pdf and .txt files.`, 'danger');
+      showUploadAlert(`Invalid file format "${ext || 'unknown'}". HELIOS accepts selectable .pdf and .txt files.`, 'danger');
       return;
     }
 
-    if (file.size > 20 * 1024 * 1024) {
-      showUploadAlert('File exceeds the 20 MB size limit. Please upload a smaller document.', 'danger');
+    if (file.size > 25 * 1024 * 1024) {
+      showUploadAlert('File exceeds the 25 MB size limit. Please upload a smaller document.', 'danger');
       return;
     }
 
@@ -580,13 +597,21 @@
         body: formData
       });
 
-      const data = await res.json();
+      let data;
+      const rawText = await res.text();
+      try {
+        data = JSON.parse(rawText);
+      } catch (parseErr) {
+        // Strip any HTML tags from unexpected server/proxy errors
+        const cleanMsg = rawText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        throw new Error(cleanMsg || `Upload failed with status code ${res.status} (${res.statusText})`);
+      }
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to upload document.');
       }
 
-      showUploadAlert(`✓ Document "${data.document.title}" uploaded and text extracted successfully!`, 'success');
+      showUploadAlert(`✓ Document "${data.document.title}" uploaded and parsed successfully!`, 'success');
 
       // Refresh documents
       await loadDocuments();
@@ -596,12 +621,58 @@
 
     } catch (err) {
       console.error('[HELIOS] Upload error:', err);
-      showUploadAlert(err.message, 'danger');
+      showUploadAlert(err.message || 'An error occurred during file upload.', 'danger');
     } finally {
       if (elements.uploadProgress) elements.uploadProgress.style.display = 'none';
       if (elements.fileInput) elements.fileInput.value = '';
     }
   }
+
+  // Load sample document for quick demonstration
+  async function loadSampleDocument() {
+    try {
+      showUploadAlert('Loading sample Mutual NDA document into your vault...', 'info');
+      const res = await fetch('/api/documents/load-sample', { method: 'POST' });
+      const raw = await res.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        throw new Error(raw || 'Server returned invalid response');
+      }
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load sample document.');
+      }
+
+      showUploadAlert('✓ Sample Mutual NDA loaded into your vault!', 'success');
+      await loadDocuments();
+      if (data.document) {
+        selectDocumentForAssistant(data.document.id);
+      }
+    } catch (err) {
+      showUploadAlert('Error loading sample document: ' + err.message, 'danger');
+    }
+  }
+
+  // Clear all documents from vault
+  async function clearAllDocuments() {
+    if (!confirm('Are you sure you want to remove all documents from the vault? This cannot be undone.')) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/documents/clear-all', { method: 'POST' });
+      const raw = await res.text();
+      let data;
+      try { data = JSON.parse(raw); } catch (e) { throw new Error(raw); }
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to clear vault.');
+      await loadDocuments();
+      showUploadAlert('Vault cleared. 0 documents remaining.', 'info');
+    } catch (err) {
+      showUploadAlert('Failed to clear vault: ' + err.message, 'danger');
+    }
+  }
+
 
   function showUploadAlert(msg, type = 'danger') {
     if (!elements.uploadAlert) return;
@@ -1269,6 +1340,8 @@
     runChecklist: (id) => runChecklistGeneration(id),
     toggleChecklistItem: (docId, itemId, isChecked) => toggleChecklistItem(docId, itemId, isChecked),
     deleteDocument: (id) => deleteDocument(id),
+    loadSample: () => loadSampleDocument(),
+    clearAll: () => clearAllDocuments(),
     closeIntelModal: () => closeIntelModal(),
     retryLastQuestion: () => {
       if (state.lastQuestion) {

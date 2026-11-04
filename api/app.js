@@ -41,11 +41,35 @@ app.use(cors());
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// Multer memory storage for uploads
-const upload = multer({
+// Multer memory storage with safe upload handler
+const uploadStorage = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 } // 20 MB max
+  limits: { fileSize: 25 * 1024 * 1024 } // 25 MB max
 });
+
+// Middleware to safely handle file upload without throwing unhandled Express exceptions
+function handleUploadFile(req, res, next) {
+  uploadStorage.any()(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          error: 'File size exceeds the 25 MB limit. Please upload a smaller document.'
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        error: `File upload error: ${err.message}`
+      });
+    }
+
+    // Support any field name ('file', 'document', etc.)
+    if (req.files && req.files.length > 0) {
+      req.file = req.files[0];
+    }
+    next();
+  });
+}
 
 // Persistence setup: store documents in data/documents.json
 const DATA_DIR = path.join(__dirname, '..', 'data');
@@ -497,21 +521,22 @@ The initial term is twelve (12) months and renews automatically for successive 1
   }
 ];
 
-// Helper: load documents from disk or initialize
+// Helper: load documents from disk or initialize with empty vault (0 documents)
 function loadDocuments() {
   try {
     if (fs.existsSync(DOCUMENTS_FILE)) {
       const data = fs.readFileSync(DOCUMENTS_FILE, 'utf-8');
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
         return parsed;
       }
     }
   } catch (err) {
-    console.warn('[HELIOS] Failed to read documents.json, falling back to defaults:', err.message);
+    console.warn('[HELIOS] Failed to read documents.json:', err.message);
   }
-  saveDocuments(INITIAL_DOCUMENTS);
-  return [...INITIAL_DOCUMENTS];
+  // Initialize vault cleanly with 0 documents
+  saveDocuments([]);
+  return [];
 }
 
 // Helper: persist documents to disk
@@ -664,6 +689,41 @@ app.get('/api/documents', (req, res) => {
   });
 });
 
+// Load sample document on demand (e.g. for demonstration)
+app.all('/api/documents/load-sample', (req, res) => {
+  try {
+    const sample = JSON.parse(JSON.stringify(INITIAL_DOCUMENTS[0]));
+    sample.id = 'doc_sample_' + Date.now();
+    sample.uploadDate = new Date().toISOString().split('T')[0];
+    documents.unshift(sample);
+    saveDocuments(documents);
+
+    res.json({
+      success: true,
+      message: 'Sample Mutual NDA document loaded successfully.',
+      document: sample
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to load sample document: ' + err.message });
+  }
+});
+
+// Clear all documents from vault
+app.all('/api/documents/clear-all', (req, res) => {
+  try {
+    const prevCount = documents.length;
+    documents = [];
+    saveDocuments([]);
+    res.json({
+      success: true,
+      message: `Cleared ${prevCount} documents. Vault is now empty.`,
+      count: 0
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to clear vault: ' + err.message });
+  }
+});
+
 // 3. Get single document with full extracted text and cached intelligence
 app.get('/api/documents/:id', (req, res) => {
   const doc = documents.find(d => d.id === req.params.id);
@@ -676,13 +736,83 @@ app.get('/api/documents/:id', (req, res) => {
   });
 });
 
+
+// Helper: Extract text from PDF buffer supporting pdf-parse v1 and v2
+async function parsePdfBuffer(buffer) {
+  // Strategy 1: Standard function export (pdf-parse v1)
+  if (typeof pdfParse === 'function') {
+    const res = await pdfParse(buffer);
+    return {
+      text: (res.text || '').trim(),
+      pageCount: res.numpages || 1
+    };
+  }
+
+  // Strategy 2: Class export (pdf-parse v2)
+  if (pdfParse && (pdfParse.PDFParse || typeof pdfParse.default === 'function')) {
+    const ParserClass = pdfParse.PDFParse || pdfParse.default;
+    if (typeof ParserClass === 'function') {
+      try {
+        const parser = new ParserClass({ data: buffer });
+        if (typeof parser.load === 'function') {
+          await parser.load();
+        }
+        let text = '';
+        let pageCount = 1;
+        if (typeof parser.getText === 'function') {
+          const res = await parser.getText();
+          if (typeof res === 'string') {
+            text = res;
+          } else if (res && typeof res.text === 'string') {
+            text = res.text;
+            pageCount = res.total || (Array.isArray(res.pages) ? res.pages.length : 1);
+          }
+        }
+        if (typeof parser.destroy === 'function') {
+          await parser.destroy().catch(() => {});
+        }
+        if (text && text.trim().length > 0) {
+          return {
+            text: text.trim(),
+            pageCount: Math.max(1, pageCount)
+          };
+        }
+      } catch (err) {
+        console.warn('[HELIOS] PDFParse class extraction failed, trying stream fallback:', err.message);
+      }
+    }
+  }
+
+  // Strategy 3: Text stream fallback for simple or unstructured PDFs
+  try {
+    const rawString = buffer.toString('binary');
+    const matches = rawString.match(/\(([^()]{3,})\)\s*Tj/g) || [];
+    if (matches.length > 0) {
+      const extracted = matches
+        .map(m => m.replace(/^\(/, '').replace(/\)\s*Tj$/, '').trim())
+        .filter(t => t.length > 1)
+        .join(' ');
+      if (extracted.length > 20) {
+        return {
+          text: extracted,
+          pageCount: 1
+        };
+      }
+    }
+  } catch (fallbackErr) {
+    // ignore
+  }
+
+  throw new Error('Unable to extract selectable text from this PDF document. The file might be a scanned image or protected.');
+}
+
 // 4. Upload document (PDF & TXT supported with real text extraction)
-app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
+app.post('/api/documents/upload', handleUploadFile, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        error: 'No file was uploaded. Please select a .pdf or .txt file.'
+        error: 'No file was received. Please select a .pdf or .txt file.'
       });
     }
 
@@ -694,21 +824,21 @@ app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
     if (ext !== '.pdf' && ext !== '.txt') {
       return res.status(400).json({
         success: false,
-        error: `Unsupported file format "${ext || mime}". HELIOS currently accepts .pdf and .txt legal documents.`
+        error: `Unsupported file format "${ext || mime}". HELIOS accepts .pdf and .txt legal documents.`
       });
     }
 
     let extractedText = '';
     let pageCount = 1;
 
-    // Handle PDF extraction via pdf-parse
+    // Handle PDF extraction via robust parsePdfBuffer helper
     if (ext === '.pdf' || mime === 'application/pdf') {
       try {
-        const parsed = await pdfParse(req.file.buffer);
-        extractedText = (parsed.text || '').trim();
-        pageCount = parsed.numpages || 1;
+        const parsed = await parsePdfBuffer(req.file.buffer);
+        extractedText = parsed.text;
+        pageCount = parsed.pageCount;
 
-        if (!extractedText || extractedText.length < 10) {
+        if (!extractedText || extractedText.length < 5) {
           return res.status(400).json({
             success: false,
             error: 'Could not extract text from this PDF. It may be a scanned image or empty. Please upload a PDF with selectable text or a .txt file.'
@@ -717,7 +847,7 @@ app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
       } catch (pdfErr) {
         return res.status(400).json({
           success: false,
-          error: 'Failed to parse PDF document. The file may be password-protected or corrupted: ' + pdfErr.message
+          error: 'Failed to parse PDF document: ' + pdfErr.message
         });
       }
     } else {
@@ -783,6 +913,7 @@ app.post('/api/documents/upload', upload.single('file'), async (req, res) => {
 });
 
 // 5. Delete document
+
 app.delete('/api/documents/:id', (req, res) => {
   const index = documents.findIndex(d => d.id === req.params.id);
   if (index === -1) {
@@ -1218,4 +1349,18 @@ app.post('/api/documents/:id/chat', (req, res) => {
   app._router.handle({ ...req, url: '/api/chat', method: 'POST' }, res);
 });
 
+// Global error handling middleware for all API routes — guarantees JSON output, never HTML error pages
+app.use('/api', (err, req, res, next) => {
+  console.error('[HELIOS API Error]', err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  const statusCode = err.status || err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    error: err.message || 'An unexpected server error occurred during request processing.'
+  });
+});
+
 module.exports = app;
+
