@@ -7,9 +7,14 @@ const path = require('path');
 const express = require('express');
 const app = require('./api/app');
 
-// Serve static frontend files
+// Serve static frontend files and public sample documents
 const frontendPath = path.join(__dirname, 'frontend');
+const publicPath = path.join(__dirname, 'public');
+const samplesPath = path.join(__dirname, 'public', 'samples');
+
 app.use(express.static(frontendPath));
+app.use('/public', express.static(publicPath));
+app.use('/samples', express.static(samplesPath));
 
 // Fallback to frontend/index.html for client routing
 app.get('*', (req, res, next) => {

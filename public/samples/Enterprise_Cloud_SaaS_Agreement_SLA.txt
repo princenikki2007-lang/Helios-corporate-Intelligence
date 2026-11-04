@@ -1,0 +1,39 @@
+MASTER SOFTWARE-AS-A-SERVICE (SaaS) AGREEMENT
+
+This Master SaaS Agreement ("Agreement") governs access to and use of the HELIOS Corporate Intelligence Platform provided by Zephyr Technologies Private Limited ("Vendor") to the enterprise entity subscribing to the Service ("Customer").
+
+1. SUBSCRIPTION GRANT AND ACCESS
+Vendor grants Customer a non-exclusive, non-transferable, worldwide right to access and use the HELIOS cloud application during the Subscription Term solely for Customer's internal business compliance monitoring. Customer shall not sublicense, resell, or distribute the Service to any third party.
+
+2. SERVICE LEVEL AGREEMENT (SLA) & UPTIME
+(a) Uptime Commitment: Vendor commits to 99.9% Monthly Uptime for the HELIOS Core API and Web Console, excluding Scheduled Maintenance windows.
+(b) Service Credits: In the event monthly uptime falls below 99.9%, Customer shall be entitled to service fee credits:
+    - 99.0% - 99.89%: 10% monthly subscription credit
+    - 95.0% - 98.99%: 25% monthly subscription credit
+    - Below 95.0%: 50% monthly subscription credit and right to terminate without penalty.
+(c) Scheduled Maintenance: Maintenance requiring downtime shall be announced at least seventy-two (72) hours in advance and executed during off-peak hours (01:00 to 05:00 IST on weekends).
+
+3. FEES, BILLING & TAXES
+Customer shall pay subscription fees specified in the applicable Order Form within thirty (30) days from invoice date (Net 30). Late payments shall accrue interest at 1.5% per month or the statutory maximum rate. All fees are exclusive of GST, which shall be charged at the prevailing statutory rate (currently 18% under HSN/SAC 998314).
+
+4. DATA OWNERSHIP AND PRIVACY
+Customer retains sole ownership of all customer data, uploaded documents, employee rosters, and compliance records ("Customer Data"). Vendor shall not use Customer Data for model training without express written consent. Vendor shall maintain SOC-2 Type II standards, TLS 1.3 encryption in transit, and AES-256 encryption at rest.
+
+5. SECURITY INCIDENT DISCLOSURE
+In the event of a confirmed personal data breach affecting Customer Data, Vendor shall notify Customer's Designated Security Contact within forty-eight (48) hours, providing technical details to facilitate compliance with MeitY and DPDP statutory notification rules.
+
+6. LIMITATION OF LIABILITY
+EXCEPT FOR GROSS NEGLIGENCE, WILLFUL MISCONDUCT, OR BREACH OF CONFIDENTIALITY OBLIGATIONS:
+(A) NEITHER PARTY SHALL BE LIABLE FOR INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, OR PUNITIVE DAMAGES; AND
+(B) EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING UNDER THIS AGREEMENT SHALL BE STRICTLY LIMITED TO THE TOTAL FEES PAID OR PAYABLE BY CUSTOMER IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM.
+
+7. INDEMNIFICATION
+Vendor shall defend and indemnify Customer against any third-party claim alleging that the HELIOS Platform infringes any valid patent, copyright, or trademark, provided Customer gives prompt written notice of the claim.
+
+8. TERM AND TERMINATION
+The initial term is twelve (12) months and renews automatically for successive 12-month periods unless either party provides written notice of non-renewal at least sixty (60) days prior to the expiration of the then-current term. Either party may terminate immediately upon thirty (30) days notice for material uncured breach.
+
+IN WITNESS WHEREOF, authorized signatories have caused this Agreement to be executed.
+
+Customer Representative: _______________________
+Vendor: Zephyr Technologies Private Limited

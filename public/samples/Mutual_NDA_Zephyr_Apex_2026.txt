@@ -1,0 +1,48 @@
+MUTUAL NON-DISCLOSURE AND CONFIDENTIALITY AGREEMENT
+
+This Mutual Non-Disclosure Agreement ("Agreement") is entered into as of October 15, 2026 ("Effective Date"), by and between:
+
+PARTY A: Zephyr Technologies Private Limited, a company incorporated under the Companies Act, 2013, having its registered office at 4th Floor, Salarpuria Cyber Park, Electronic City Phase 1, Bengaluru, Karnataka 560100 ("Disclosing/Receiving Party"); and
+
+PARTY B: Apex Global Solutions LLC, a corporation registered under the laws of Delaware, USA, with principal place of business at 1209 Orange Street, Wilmington, DE 19801 ("Disclosing/Receiving Party").
+
+RECITALS:
+The Parties wish to explore potential business collaboration and enterprise SaaS integration opportunities ("Purpose"). In connection with the Purpose, each party may disclose to the other certain proprietary and non-public technical, commercial, and legal information.
+
+1. DEFINITION OF CONFIDENTIAL INFORMATION
+"Confidential Information" means any proprietary data, trade secrets, software code, customer lists, financial projections, API specifications, business plans, patent disclosures, and security audits disclosed by either party, whether orally or in writing, designated as confidential or which reasonably should be understood to be confidential.
+
+2. EXCLUSIONS FROM CONFIDENTIAL INFORMATION
+Confidential Information does not include information that:
+(a) is or becomes publicly available without breach of this Agreement;
+(b) was already known to the Receiving Party prior to disclosure as evidenced by written records;
+(c) is independently developed by the Receiving Party without reference to or reliance upon Disclosing Party's Confidential Information; or
+(d) is lawfully obtained from a third party without duty of confidentiality.
+
+3. OBLIGATIONS OF RECEIVING PARTY
+The Receiving Party agrees to:
+(a) protect Confidential Information with the same degree of care it uses for its own confidential data, but no less than reasonable care;
+(b) restrict disclosure strictly to employees, contractors, and legal advisors who need to know for the Purpose and who are bound by written non-disclosure obligations at least as restrictive as this Agreement;
+(c) not reverse engineer, decompile, or disassemble any software or firmware samples provided.
+
+4. DURATION AND TERM
+This Agreement shall govern disclosures made for a period of two (2) years from the Effective Date. The confidentiality and non-use obligations with respect to all disclosed Confidential Information shall survive for three (3) years following the termination of this Agreement, provided that trade secrets shall remain protected indefinitely.
+
+5. REMEDIES AND INJUNCTIVE RELIEF
+The Parties acknowledge that unauthorized disclosure or use of Confidential Information may cause irreparable harm for which monetary damages alone would be inadequate. Accordingly, the Disclosing Party shall be entitled to seek injunctive relief without proving actual damages, in addition to any other legal remedies available.
+
+6. GOVERNING LAW AND JURISDICTION
+This Agreement shall be governed by and construed in accordance with the laws of India. Any dispute arising out of or in connection with this Agreement shall be referred to arbitration in Bengaluru, Karnataka, conducted in English under the Arbitration and Conciliation Act, 1996, before a sole arbitrator mutually agreed upon.
+
+7. RETURN OR DESTRUCTION OF MATERIALS
+Within fourteen (14) days upon written request by Disclosing Party, Receiving Party shall return or certify the secure destruction of all physical and electronic documents containing Confidential Information.
+
+IN WITNESS WHEREOF, the Parties have executed this Agreement by their authorized representatives.
+
+For Zephyr Technologies Pvt Ltd:
+Name: Arjun Mehta
+Title: Managing Director & CEO
+
+For Apex Global Solutions LLC:
+Name: Marcus Vance
+Title: Senior Vice President of Corporate Development

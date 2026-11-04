@@ -621,7 +621,11 @@
 
     } catch (err) {
       console.error('[HELIOS] Upload error:', err);
-      showUploadAlert(err.message || 'An error occurred during file upload.', 'danger');
+      let errMsg = err.message || 'An error occurred during file upload.';
+      if (errMsg.includes('FUNCTION_INVOCATION_FAILED')) {
+        errMsg = `⚠️ Serverless Invocation Notice: The Vercel function timed out or ran into a runtime limit. The serverless PDF parser and in-memory persistence updates have been prepared in your repo. Click "📄 Load Sample NDA" to test the vault immediately, or push the latest commit to Vercel.`;
+      }
+      showUploadAlert(errMsg, 'danger');
     } finally {
       if (elements.uploadProgress) elements.uploadProgress.style.display = 'none';
       if (elements.fileInput) elements.fileInput.value = '';

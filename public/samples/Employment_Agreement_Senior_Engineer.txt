@@ -1,0 +1,46 @@
+ZEPHYR TECHNOLOGIES PRIVATE LIMITED
+EXECUTIVE EMPLOYMENT AGREEMENT
+
+EMPLOYEE: Rohan Deshmukh
+POSITION: Lead Systems Architect / Senior Software Engineer
+COMMENCEMENT DATE: November 01, 2026
+LOCATION: Bengaluru, Karnataka, India
+
+1. DUTIES AND REPORTING
+The Employee agrees to serve as Lead Systems Architect, reporting directly to the Chief Technology Officer (CTO). The Employee shall devote full business time, attention, and skill to the performance of duties and shall not engage in outside commercial employment, consulting, or moonlighting without prior written consent.
+
+2. COMPENSATION AND BENEFITS
+(a) Base Salary: ₹28,00,000 (Twenty-Eight Lakhs Rupees) per annum, payable in monthly installments subject to statutory TDS deductions.
+(b) Performance Bonus: Discretionary annual bonus up to 15% of annual base pay, contingent on company EBITDA targets and individual milestone delivery.
+(c) Benefits: Comprehensive health insurance for Employee, spouse, and up to two dependent children up to ₹10,00,000 coverage.
+(d) Leave Entitlement: 18 earned privilege leaves, 12 casual/sick leaves per calendar year under Karnataka Shops & Commercial Establishments Act.
+
+3. PROBATION PERIOD
+The Employee shall serve a probation period of three (3) months from the Commencement Date. During probation, either party may terminate this agreement with fifteen (15) days written notice or pay in lieu thereof. Upon satisfactory review, employment shall be confirmed in writing.
+
+4. TERMINATION AND NOTICE PERIOD
+Following confirmation:
+(a) Either party may terminate employment without cause by providing sixty (60) days advance written notice or equivalent base salary in lieu of notice.
+(b) The Company may terminate employment immediately for Cause (defined as material fraud, embezzlement, criminal conviction, intentional data leakage, or gross violation of the Company Code of Conduct) without notice or severance pay.
+
+5. INTELLECTUAL PROPERTY AND INVENTIONS ASSIGNMENT
+All inventions, source code, algorithms, architectures, patents, and copyrightable works created or conceived by Employee during the course of employment, whether on company premises or remotely, using company equipment or related to company business, shall be the sole and exclusive property of Zephyr Technologies Pvt Ltd ("Work Made for Hire"). The Employee hereby irrevocably assigns all right, title, and interest therein.
+
+6. NON-COMPETE AND NON-SOLICITATION COVENANTS
+(a) Non-Compete: During employment and for a period of twelve (12) months following termination, Employee shall not directly or indirectly accept employment with, advise, or consult for any direct competitor operating in corporate legal intelligence software in India.
+(b) Non-Solicitation: For eighteen (18) months following termination, Employee shall not solicit, recruit, or attempt to induce any employee or contractor of the Company to terminate their engagement.
+
+7. DATA PROTECTION COMPLIANCE
+Employee agrees to strictly comply with the Digital Personal Data Protection (DPDP) Act, 2023 and the Company's Information Security Management System (ISMS). Any unauthorized exfiltration of corporate or customer personal data shall result in immediate disciplinary and legal proceedings.
+
+8. GOVERNING LAW
+This agreement is governed by the laws of Karnataka and India. The courts of Bengaluru shall have exclusive jurisdiction.
+
+IN WITNESS WHEREOF, the parties hereto have signed this agreement as of November 01, 2026.
+
+Employee Signature: ______________________
+Rohan Deshmukh
+
+For Zephyr Technologies Pvt Ltd:
+Authorized Signatory: ___________________
+HR Director

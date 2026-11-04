@@ -9,7 +9,22 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const pdfParse = require('pdf-parse');
+
+// Serverless-resilient PDF extraction packages (zero native dependencies)
+let unpdf = null;
+try {
+  unpdf = require('unpdf');
+} catch (e) {
+  console.warn('[HELIOS] unpdf load notice:', e.message);
+}
+
+let pdfParse = null;
+try {
+  pdfParse = require('pdf-parse');
+} catch (e) {
+  console.warn('[HELIOS] pdf-parse optional load notice:', e.message);
+}
+
 const { GoogleGenAI, Type } = require('@google/genai');
 
 // Load environment variables from .env if present
@@ -41,6 +56,24 @@ app.use(cors());
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
+// Normalization middleware for Vercel Serverless Function routing:
+// Ensures routes match whether incoming path is /api/documents or /documents
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/')) {
+    next();
+  } else if (
+    req.url === '/health' ||
+    req.url.startsWith('/documents') ||
+    req.url.startsWith('/ai/') ||
+    req.url.startsWith('/chat')
+  ) {
+    req.url = '/api' + req.url;
+    next();
+  } else {
+    next();
+  }
+});
+
 // Multer memory storage with safe upload handler
 const uploadStorage = multer({
   storage: multer.memoryStorage(),
@@ -71,16 +104,17 @@ function handleUploadFile(req, res, next) {
   });
 }
 
-// Persistence setup: store documents in data/documents.json
-const DATA_DIR = path.join(__dirname, '..', 'data');
+// Persistence setup: store documents in data/documents.json or /tmp in serverless environments
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const DATA_DIR = isServerless ? '/tmp/helios_data' : path.join(__dirname, '..', 'data');
 const DOCUMENTS_FILE = path.join(DATA_DIR, 'documents.json');
 
-if (!fs.existsSync(DATA_DIR)) {
-  try {
+try {
+  if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-  } catch (err) {
-    console.warn('[HELIOS] Could not create data directory, using memory only:', err.message);
   }
+} catch (err) {
+  console.warn('[HELIOS] Read-only filesystem detected, persistence will use in-memory store:', err.message);
 }
 
 // Initial pre-seeded corporate legal documents with verified text & intelligence
@@ -531,20 +565,31 @@ function loadDocuments() {
         return parsed;
       }
     }
+    // Also check standard data directory if running on serverless
+    const projectFallback = path.join(__dirname, '..', 'data', 'documents.json');
+    if (fs.existsSync(projectFallback)) {
+      const data = fs.readFileSync(projectFallback, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    }
   } catch (err) {
-    console.warn('[HELIOS] Failed to read documents.json:', err.message);
+    console.warn('[HELIOS] Read documents warning:', err.message);
   }
-  // Initialize vault cleanly with 0 documents
-  saveDocuments([]);
   return [];
 }
 
 // Helper: persist documents to disk
 function saveDocuments(docs) {
   try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
     fs.writeFileSync(DOCUMENTS_FILE, JSON.stringify(docs, null, 2), 'utf-8');
   } catch (err) {
-    console.warn('[HELIOS] Failed to write documents.json:', err.message);
+    // In serverless environments, file writing may be restricted to /tmp or read-only; documents stay in memory
+    console.warn('[HELIOS] Disk write note (in-memory store active):', err.message);
   }
 }
 
@@ -737,18 +782,40 @@ app.get('/api/documents/:id', (req, res) => {
 });
 
 
-// Helper: Extract text from PDF buffer supporting pdf-parse v1 and v2
+// Helper: Extract text from PDF buffer supporting unpdf, pdf-parse v1, v2, and text-stream fallback
 async function parsePdfBuffer(buffer) {
-  // Strategy 1: Standard function export (pdf-parse v1)
-  if (typeof pdfParse === 'function') {
-    const res = await pdfParse(buffer);
-    return {
-      text: (res.text || '').trim(),
-      pageCount: res.numpages || 1
-    };
+  // Strategy 1: unpdf (Serverless-native, zero native binaries, fully Vercel Lambda compatible)
+  if (unpdf && typeof unpdf.extractText === 'function') {
+    try {
+      const uint8 = new Uint8Array(buffer);
+      const res = await unpdf.extractText(uint8, { mergePages: true });
+      if (res && res.text && res.text.trim().length > 0) {
+        return {
+          text: res.text.trim(),
+          pageCount: res.totalPages || 1
+        };
+      }
+    } catch (unpdfErr) {
+      console.warn('[HELIOS] unpdf extraction failed, attempting fallbacks:', unpdfErr.message);
+    }
   }
 
-  // Strategy 2: Class export (pdf-parse v2)
+  // Strategy 2: Standard function export (pdf-parse v1)
+  if (typeof pdfParse === 'function') {
+    try {
+      const res = await pdfParse(buffer);
+      if (res && res.text && res.text.trim().length > 0) {
+        return {
+          text: (res.text || '').trim(),
+          pageCount: res.numpages || 1
+        };
+      }
+    } catch (v1Err) {
+      console.warn('[HELIOS] pdfParse v1 failed, trying class parser:', v1Err.message);
+    }
+  }
+
+  // Strategy 3: Class export (pdf-parse v2)
   if (pdfParse && (pdfParse.PDFParse || typeof pdfParse.default === 'function')) {
     const ParserClass = pdfParse.PDFParse || pdfParse.default;
     if (typeof ParserClass === 'function') {
@@ -783,7 +850,7 @@ async function parsePdfBuffer(buffer) {
     }
   }
 
-  // Strategy 3: Text stream fallback for simple or unstructured PDFs
+  // Strategy 4: Text stream fallback for simple or unstructured PDFs
   try {
     const rawString = buffer.toString('binary');
     const matches = rawString.match(/\(([^()]{3,})\)\s*Tj/g) || [];
