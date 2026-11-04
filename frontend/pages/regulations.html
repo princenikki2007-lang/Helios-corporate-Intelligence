@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Regulatory Intelligence &amp; Rule Changes — HELIOS</title>
+  <meta name="description" content="Official Central & State Government regulatory intelligence feed and What's Changed rule diffs.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="regulations" data-breadcrumb="Regulatory Intelligence">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+              LEVEL 1 &amp; LEVEL 2 OFFICIAL GAZETTES
+            </div>
+            <h1 class="page-hero-title">Regulatory Intelligence &amp; Rule Changes</h1>
+            <p class="page-hero-subtitle">
+              Verified statutory notifications from Central Ministries, MCA, CBIC, CBDT, MeitY, and Department of Labour with automated rule diff tracking.
+            </p>
+          </div>
+
+          <!-- Tab Switcher -->
+          <div style="display: flex; gap: var(--space-2); background: var(--bg-surface); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <button class="btn btn-primary btn-sm" id="tab-btn-circulars" onclick="switchTab('circulars')">Official Circulars Feed</button>
+            <button class="btn btn-ghost btn-sm" id="tab-btn-diff" onclick="switchTab('diff')">What's Changed? (Rule Diffs)</button>
+          </div>
+        </div>
+
+        <!-- TAB 1: OFFICIAL CIRCULARS FEED -->
+        <div id="tab-circulars-view">
+          <!-- Authority Filter Pill Bar -->
+          <div class="card" style="padding: var(--space-3); margin-bottom: var(--space-6);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+              <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="filterAuthority('All')">All Authorities</button>
+                <button class="btn btn-ghost btn-sm" onclick="filterAuthority('MeitY')">MeitY (DPDP)</button>
+                <button class="btn btn-ghost btn-sm" onclick="filterAuthority('CBIC')">CBIC / GST Council</button>
+                <button class="btn btn-ghost btn-sm" onclick="filterAuthority('MCA')">MCA (Companies Act)</button>
+                <button class="btn btn-ghost btn-sm" onclick="filterAuthority('Labour')">Department of Labour</button>
+                <button class="btn btn-ghost btn-sm" onclick="filterAuthority('CBDT')">CBDT (Direct Tax)</button>
+              </div>
+
+              <div style="font-size: var(--font-size-2xs); color: var(--text-muted); font-family: var(--font-family-mono);">
+                Strict Level 1 Priority Grounding
+              </div>
+            </div>
+          </div>
+
+          <!-- Circulars List -->
+          <div id="regulations-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- TAB 2: WHAT'S CHANGED? (RULE CHANGES DIFF) -->
+        <div id="tab-diff-view" style="display: none;">
+          <div style="margin-bottom: var(--space-4); font-size: var(--font-size-xs); color: var(--text-secondary);">
+            Compare previous regulatory requirements against current enforced mandates with company impact assessments.
+          </div>
+
+          <div id="rule-diff-list" style="display: flex; flex-direction: column; gap: var(--space-6);">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Source Trust Legend & Legal Notice -->
+        <div class="card card-elevated" style="margin-top: var(--space-8); padding: var(--space-4);">
+          <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-primary); margin-bottom: var(--space-2); text-transform: uppercase;">
+            SOURCE TRUST SPECIFICATION &amp; HIERARCHY
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-3); font-size: var(--font-size-2xs);">
+            <div><span class="pill-trust-1">Level 1</span> <strong>Official Central Govt</strong> (Gazette of India, Ministry Acts, CBIC/CBDT Notifications)</div>
+            <div><span class="pill-trust-2">Level 2</span> <strong>Statutory Regulatory Authorities</strong> (RBI Master Directions, SEBI, State Labour Departments)</div>
+            <div><span class="pill-trust-1" style="background: rgba(139,92,246,0.15); color: #C084FC; border-color: rgba(139,92,246,0.35);">Level 3</span> <strong>Institutional Sources</strong> (Judicial judgments, ICAI Standards)</div>
+            <div><span class="pill-trust-1" style="background: rgba(100,116,139,0.15); color: #94A3B8; border-color: rgba(100,116,139,0.35);">Level 4</span> <strong>Secondary Summaries</strong> (Strictly non-binding)</div>
+          </div>
+        </div>
+
+        <div class="legal-disclaimer-box" style="margin-top: var(--space-4);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>
+            HELIOS monitors official public gazettes and government portals. It does not replace professional advice from chartered accountants or corporate lawyers.
+          </span>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    let allRegulations = [];
+    let allRuleDiffs = [];
+    let currentAuthority = 'All';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadRegulationsData();
+    });
+
+    function switchTab(tab) {
+      if (tab === 'circulars') {
+        document.getElementById('tab-circulars-view').style.display = 'block';
+        document.getElementById('tab-diff-view').style.display = 'none';
+        document.getElementById('tab-btn-circulars').className = 'btn btn-primary btn-sm';
+        document.getElementById('tab-btn-diff').className = 'btn btn-ghost btn-sm';
+      } else {
+        document.getElementById('tab-circulars-view').style.display = 'none';
+        document.getElementById('tab-diff-view').style.display = 'block';
+        document.getElementById('tab-btn-circulars').className = 'btn btn-ghost btn-sm';
+        document.getElementById('tab-btn-diff').className = 'btn btn-primary btn-sm';
+      }
+    }
+
+    async function loadRegulationsData() {
+      try {
+        const [regRes, diffRes] = await Promise.all([
+          fetch('/api/regulations'),
+          fetch('/api/regulations/diff')
+        ]);
+        const regData = await regRes.json();
+        const diffData = await diffRes.json();
+
+        if (regData.success) {
+          allRegulations = regData.regulations;
+          renderCirculars();
+        }
+
+        if (diffData.success) {
+          allRuleDiffs = diffData.ruleChanges;
+          renderDiffs();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function filterAuthority(auth) {
+      currentAuthority = auth;
+      renderCirculars();
+    }
+
+    function renderCirculars() {
+      const container = document.getElementById('regulations-list');
+      const filtered = allRegulations.filter(r => {
+        return currentAuthority === 'All' || r.authority.toLowerCase().includes(currentAuthority.toLowerCase());
+      });
+
+      container.innerHTML = filtered.map(r => `
+        <div class="card" style="border-left: 4px solid ${r.impactLevel === 'HIGH' ? '#EF4444' : r.impactLevel === 'MEDIUM' ? '#F59E0B' : '#06B6D4'};">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-2); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+              <span class="pill-trust-${r.sourceTrustRank}">${r.sourceLevel}</span>
+              <span class="badge ${r.impactLevel === 'HIGH' ? 'badge-danger' : r.impactLevel === 'MEDIUM' ? 'badge-warning' : 'badge-info'}">
+                ${r.impactLevel} Impact
+              </span>
+              <span style="font-size: 0.7rem; font-family: var(--font-family-mono); color: var(--text-muted);">${r.authority}</span>
+            </div>
+
+            <div style="font-size: 0.7rem; font-family: var(--font-family-mono); color: var(--text-muted);">
+              Published: ${r.publicationDate} · Effective: <strong style="color: #FFF;">${r.effectiveDate}</strong>
+            </div>
+          </div>
+
+          <h3 style="font-size: var(--font-size-sm); font-weight: 700; color: #FFF; margin-bottom: var(--space-2);">
+            ${r.title}
+          </h3>
+
+          <p style="font-size: var(--font-size-xs); color: var(--text-secondary); line-height: 1.5; margin-bottom: var(--space-3);">
+            ${r.summary}
+          </p>
+
+          <div style="background-color: var(--bg-surface-secondary); padding: var(--space-3); border-radius: var(--radius-xs); margin-bottom: var(--space-3);">
+            <div style="font-size: 0.65rem; font-weight: 700; color: var(--color-brand); text-transform: uppercase; margin-bottom: 4px;">KEY STATUTORY REQUIREMENTS:</div>
+            <ul style="padding-left: var(--space-4); font-size: var(--font-size-2xs); color: var(--text-primary); line-height: 1.5;">
+              ${r.keyRequirements.map(k => `<li>${k}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; border-top: 1px solid var(--border-subtle); padding-top: var(--space-2);">
+            <span style="color: var(--text-muted); font-family: var(--font-family-mono);">
+              Gazette Ref: ${r.gazetteId} · Jurisdiction: ${r.jurisdiction}
+            </span>
+            <a href="${r.officialSourceLink}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm" style="color: var(--color-brand);">
+              Official Govt Gazette ↗
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderDiffs() {
+      const container = document.getElementById('rule-diff-list');
+      container.innerHTML = allRuleDiffs.map(d => `
+        <div class="card" style="border: 1px solid var(--border-light);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
+            <div>
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <span class="badge ${d.changeType === 'NEW' ? 'badge-success' : d.changeType === 'UPDATED' ? 'badge-warning' : 'badge-danger'}">
+                  ${d.changeType} RULE
+                </span>
+                <span class="tag-effective">${d.statusBadge}</span>
+              </div>
+              <h3 style="font-size: var(--font-size-md); font-weight: 700; color: #FFF; margin-top: var(--space-2);">
+                ${d.title}
+              </h3>
+              <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-family-mono); margin-top: 2px;">
+                Authority: ${d.authority} · Effective Date: ${d.effectiveDate}
+              </div>
+            </div>
+
+            <div style="font-size: 0.7rem; color: var(--color-brand); font-family: var(--font-family-mono);">
+              ${d.sourceCitation}
+            </div>
+          </div>
+
+          <!-- Comparison Columns -->
+          <div class="compare-container" style="margin-bottom: var(--space-4);">
+            <div style="padding: var(--space-4); background-color: rgba(239, 68, 68, 0.05); border-radius: var(--radius-sm); border-left: 3px solid #EF4444;">
+              <div style="font-size: 0.65rem; font-weight: 700; color: #F87171; text-transform: uppercase; margin-bottom: 4px;">
+                PREVIOUS RULE / STATUS QUO
+              </div>
+              <div style="font-size: var(--font-size-xs); color: var(--text-secondary); line-height: 1.5;">
+                ${d.oldRequirement}
+              </div>
+            </div>
+
+            <div style="padding: var(--space-4); background-color: rgba(16, 185, 129, 0.05); border-radius: var(--radius-sm); border-left: 3px solid #10B981;">
+              <div style="font-size: 0.65rem; font-weight: 700; color: #34D399; text-transform: uppercase; margin-bottom: 4px;">
+                NEW STATUTORY REQUIREMENT
+              </div>
+              <div style="font-size: var(--font-size-xs); color: #FFF; line-height: 1.5;">
+                ${d.newRequirement}
+              </div>
+            </div>
+          </div>
+
+          <!-- Impact Assessment -->
+          <div style="padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-xs); border: 1px solid var(--border-accent);">
+            <div style="font-size: 0.65rem; font-weight: 700; color: var(--color-brand); text-transform: uppercase; margin-bottom: 2px;">
+              HELIOS COMPANY IMPACT ASSESSMENT:
+            </div>
+            <div style="font-size: var(--font-size-2xs); color: var(--text-primary); line-height: 1.5;">
+              ${d.heliosImpactAssessment}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

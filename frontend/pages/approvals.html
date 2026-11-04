@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approval Center — HELIOS</title>
+  <meta name="description" content="Track government approvals, statutory licenses, trademark registrations, and renewal workflows.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="approvals" data-breadcrumb="Approval Center">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+              STATUTORY PERMITS &amp; LICENSES
+            </div>
+            <h1 class="page-hero-title">Approval &amp; License Center</h1>
+            <p class="page-hero-subtitle">
+              Monitor active licenses, government filings, intellectual property examinations, and pending renewal deadlines across jurisdictions.
+            </p>
+          </div>
+
+          <button class="btn btn-primary btn-sm" onclick="toggleNewApprovalModal()">
+            + Add License / Approval
+          </button>
+        </div>
+
+        <!-- Approvals Table -->
+        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: var(--space-6);">
+          <div class="data-table-wrapper" style="border: none;">
+            <table class="data-table" aria-label="Statutory Approvals and Licenses">
+              <thead>
+                <tr>
+                  <th>Application / License Title</th>
+                  <th>Issuing Authority</th>
+                  <th>License / Filing #</th>
+                  <th>Category</th>
+                  <th>Validity Period</th>
+                  <th>Status</th>
+                  <th>Next Action Required</th>
+                </tr>
+              </thead>
+              <tbody id="approvals-tbody">
+                <!-- Loaded by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Add New Approval -->
+  <div id="new-approval-modal" class="cmd-palette-backdrop">
+    <div class="cmd-palette-modal" style="max-width: 540px; padding: var(--space-6);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+        <h3 style="font-size: var(--font-size-sm); color: #FFF;">Track New Statutory License / Application</h3>
+        <button class="btn btn-ghost btn-sm" onclick="toggleNewApprovalModal()">✕</button>
+      </div>
+
+      <form id="new-app-form" onsubmit="submitNewApproval(event)">
+        <div class="form-group">
+          <label class="form-label">Application Title *</label>
+          <input type="text" id="app-title" class="form-input" required placeholder="e.g. FSSAI Food License / Trade License" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Issuing Government Authority *</label>
+          <input type="text" id="app-authority" class="form-input" required placeholder="e.g. Municipal Corporation / Labour Department" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+          <div class="form-group">
+            <label class="form-label">Registration / License #</label>
+            <input type="text" id="app-number" class="form-input" placeholder="e.g. KN-BLR-2026-9812" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Current Status</label>
+            <select id="app-status" class="form-select">
+              <option value="Submitted">Submitted</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Action Required">Action Required</option>
+              <option value="Approved">Approved</option>
+              <option value="Draft">Draft</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Next Action / Due Date</label>
+          <input type="text" id="app-next-action" class="form-input" placeholder="e.g. Submit Form F online before 20-Nov-2026" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-6);">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleNewApprovalModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadApprovals();
+    });
+
+    async function loadApprovals() {
+      try {
+        const res = await fetch('/api/approvals');
+        const data = await res.json();
+        if (data.success && data.approvals) {
+          const tbody = document.getElementById('approvals-tbody');
+          tbody.innerHTML = data.approvals.map(a => `
+            <tr>
+              <td class="primary-cell">
+                <div style="font-weight: 600; color: #FFF;">${a.application}</div>
+              </td>
+              <td>${a.authority}</td>
+              <td class="mono-cell">${a.licenseNumber}</td>
+              <td><span class="badge badge-secondary">${a.category}</span></td>
+              <td class="mono-cell" style="color: ${a.validUntil.includes('2026') ? '#FBBF24' : 'inherit'};">${a.validUntil}</td>
+              <td>
+                <span class="badge ${a.status === 'Approved' ? 'badge-success' : a.status === 'Action Required' ? 'badge-danger' : 'badge-warning'}">
+                  ${a.status}
+                </span>
+              </td>
+              <td style="font-size: var(--font-size-2xs); color: var(--text-primary); max-width: 260px;">
+                ${a.nextAction}
+              </td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function toggleNewApprovalModal() {
+      const el = document.getElementById('new-approval-modal');
+      el.style.display = el.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function submitNewApproval(e) {
+      e.preventDefault();
+      const payload = {
+        application: document.getElementById('app-title').value,
+        authority: document.getElementById('app-authority').value,
+        licenseNumber: document.getElementById('app-number').value,
+        status: document.getElementById('app-status').value,
+        nextAction: document.getElementById('app-next-action').value
+      };
+
+      try {
+        const res = await fetch('/api/approvals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          toggleNewApprovalModal();
+          loadApprovals();
+          HeliosUI.showToast("Statutory approval entry recorded!", "success");
+        }
+      } catch (err) {
+        alert("Error saving approval entry.");
+      }
+    }
+  </script>
+</body>
+</html>

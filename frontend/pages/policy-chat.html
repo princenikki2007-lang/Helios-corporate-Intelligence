@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask HELIOS — Legal &amp; Compliance AI Assistant</title>
+  <script>window.location.replace('../index.html#assistant');</script>
+  <meta name="description" content="AI-powered corporate compliance intelligence assistant grounded in verified government notifications and uploaded company documents.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="policy-chat" data-breadcrumb="Ask HELIOS (Legal AI)">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content" style="display: flex; flex-direction: column; height: calc(100vh - 64px);">
+
+        <!-- Page Hero -->
+        <div class="page-hero" style="margin-bottom: var(--space-4);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+            <div>
+              <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+                GROUNDED STATUTORY REASONING
+              </div>
+              <h1 class="page-hero-title" style="font-size: var(--font-size-xl);">Ask HELIOS — Legal &amp; Compliance Assistant</h1>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <span class="badge badge-success">● Neural Compliance Core</span>
+              <span class="pill-trust-1">Level 1 Priority Grounded</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mandatory Responsible AI Disclaimer Bar -->
+        <div class="legal-disclaimer-box" style="margin-top: 0; margin-bottom: var(--space-4);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>
+            <strong>STATUTORY NOTICE:</strong> HELIOS provides compliance intelligence and informational analysis based on public gazette orders and company files. It does not replace advice from a qualified legal, tax, or compliance professional.
+          </span>
+        </div>
+
+        <!-- Suggestion Prompt Chips -->
+        <div style="display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-2); margin-bottom: var(--space-3); flex-shrink: 0;">
+          <button class="btn btn-secondary btn-sm" onclick="sendPrompt('What compliance tasks are due this month?')">
+            📅 What compliance tasks are due this month?
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="sendPrompt('Does this new GST change affect us?')">
+            🧾 Does this new GST change affect us?
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="sendPrompt('Which company documents expire soon?')">
+            ⌛ Which company documents expire soon?
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="sendPrompt('Compare our HR policy with current requirements')">
+            👥 Compare our HR policy with current rules
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="sendPrompt('Explain the MeitY DPDP Rules 2026 impact')">
+            🔒 Explain the DPDP Rules 2026 impact
+          </button>
+        </div>
+
+        <!-- Chat Stream Window -->
+        <div class="card" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0;">
+          
+          <div id="chat-messages" class="chat-stream-box" style="flex: 1; padding: var(--space-6);">
+            <!-- Seed Welcome Message from Helios -->
+            <div class="chat-bubble chat-bubble-ai">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2);">
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <div style="width: 20px; height: 20px; background: var(--color-brand); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #000;">☀️</div>
+                  <strong style="color: #FFF; font-size: var(--font-size-xs);">HELIOS Legal Intelligence</strong>
+                </div>
+                <span class="badge badge-brand">AI Verified Analysis</span>
+              </div>
+              <p style="font-size: var(--font-size-xs); color: #E2E8F0; line-height: 1.6;">
+                Welcome to the HELIOS Compliance Command Center. I have indexed your company workspace (<strong>Zephyr Technologies Private Limited</strong>, CIN: <code>U72900KA2022PTC158941</code>) and verified it against Central Government Gazettes, CBIC notifications, and Department of Labour mandates. How can I assist with your corporate compliance today?
+              </p>
+            </div>
+          </div>
+
+          <!-- Chat Input Bar -->
+          <div style="padding: var(--space-3) var(--space-4); background-color: var(--bg-surface-secondary); border-top: 1px solid var(--border-subtle); display: flex; gap: var(--space-2); align-items: center;">
+            <input type="text" id="chat-user-input" class="form-input" placeholder="Ask anything regarding company documents, tax obligations, or gazette notices..." onkeydown="if(event.key==='Enter')handleSend()" />
+            <button class="btn btn-primary btn-sm" id="btn-send-chat" onclick="handleSend()">
+              Send ↵
+            </button>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    async function handleSend() {
+      const input = document.getElementById('chat-user-input');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      sendPrompt(text);
+    }
+
+    async function sendPrompt(query) {
+      const chatBox = document.getElementById('chat-messages');
+      const btn = document.getElementById('btn-send-chat');
+
+      // Append user bubble
+      const userBubble = document.createElement('div');
+      userBubble.className = 'chat-bubble chat-bubble-user';
+      userBubble.textContent = query;
+      chatBox.appendChild(userBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Loading bubble
+      const aiBubble = document.createElement('div');
+      aiBubble.className = 'chat-bubble chat-bubble-ai';
+      aiBubble.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-2); color: var(--text-muted); font-size: var(--font-size-xs);">
+          <span class="btn-spinner"></span>
+          <span>Synthesizing company filings and Level 1 regulatory gazettes...</span>
+        </div>
+      `;
+      chatBox.appendChild(aiBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          let citationsHtml = '';
+          if (data.citations && data.citations.length > 0) {
+            citationsHtml = `
+              <div class="citation-pill-row">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; align-self: center;">CITATIONS:</span>
+                ${data.citations.map(c => `
+                  <a href="${c.link || '#'}" target="_blank" rel="noopener" class="citation-pill" title="${c.section}">
+                    📄 ${c.source} · ${c.section} ↗
+                  </a>
+                `).join('')}
+              </div>
+            `;
+          }
+
+          aiBubble.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2);">
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <div style="width: 20px; height: 20px; background: var(--color-brand); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #000;">☀️</div>
+                <strong style="color: #FFF; font-size: var(--font-size-xs);">HELIOS Response</strong>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <span class="pill-trust-1">${data.sourceTrustLevel}</span>
+                <span class="badge badge-success">${data.confidence} Confidence</span>
+              </div>
+            </div>
+
+            <div style="font-size: var(--font-size-xs); color: #E2E8F0; line-height: 1.6; white-space: pre-wrap;">
+${data.answer}
+            </div>
+
+            ${citationsHtml}
+
+            <div style="margin-top: var(--space-3); padding-top: var(--space-2); border-top: 1px solid var(--border-subtle); font-size: 0.65rem; color: var(--text-muted); font-style: italic;">
+              ${data.disclaimer}
+            </div>
+          `;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+      } catch (err) {
+        aiBubble.innerHTML = `<span style="color: #EF4444;">Error connecting to legal reasoning engine.</span>`;
+      }
+    }
+  </script>
+</body>
+</html>

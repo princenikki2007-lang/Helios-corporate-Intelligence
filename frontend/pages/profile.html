@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile & Settings — HELIOS</title>
+  <meta name="description" content="Manage your HELIOS account profile and settings.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page-title="Profile & Settings" data-breadcrumb="Profile">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Sidebar"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+        <div class="page-hero">
+          <h2 class="page-hero-title">Profile & Account Settings</h2>
+          <p class="page-hero-subtitle">Manage your personal information and account preferences.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 300px 1fr; gap: var(--space-6); max-width: 960px;">
+
+          <!-- Profile Card -->
+          <div>
+            <div class="card" style="text-align: center; padding: var(--space-8);">
+              <div class="avatar avatar-lg" id="profile-avatar" style="margin: 0 auto var(--space-4);">U</div>
+              <div style="font-size: var(--font-size-base); font-weight: 700; color: var(--text-primary); margin-bottom: 4px;" id="profile-name">—</div>
+              <div style="font-size: var(--font-size-xs); color: var(--text-muted); text-transform: capitalize; margin-bottom: var(--space-2);" id="profile-role">—</div>
+              <div class="badge badge-brand" id="profile-org" style="justify-content: center;">—</div>
+            </div>
+          </div>
+
+          <!-- Details & Settings -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-5);">
+
+            <!-- Account Info -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Account Information</div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" id="field-name" readonly />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Corporate Email</label>
+                  <input type="email" class="form-input" id="field-email" readonly />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Role</label>
+                  <input type="text" class="form-input" id="field-role" readonly style="text-transform: capitalize;" />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Organization</label>
+                  <input type="text" class="form-input" id="field-org" readonly />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Department</label>
+                  <input type="text" class="form-input" id="field-department" readonly />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label">Title</label>
+                  <input type="text" class="form-input" id="field-title" readonly />
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Password (Placeholder) -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Security</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="field-current-password">Current Password</label>
+                <input type="password" id="field-current-password" class="form-input" placeholder="Enter current password" />
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label" for="field-new-password">New Password</label>
+                  <input type="password" id="field-new-password" class="form-input" placeholder="New password" />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                  <label class="form-label" for="field-confirm-password">Confirm Password</label>
+                  <input type="password" id="field-confirm-password" class="form-input" placeholder="Confirm new password" />
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; margin-top: var(--space-4);">
+                <button type="button" class="btn btn-secondary" onclick="HeliosUI.showToast('Password change will be available after backend integration.', 'info')">Update Password</button>
+              </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card" style="border-color: rgba(239,68,68,0.2);">
+              <div class="card-header">
+                <div class="card-title" style="color: var(--color-danger);">Session</div>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-size: var(--font-size-sm); font-weight: 500; color: var(--text-primary);">Sign out of HELIOS</div>
+                  <div style="font-size: var(--font-size-xs); color: var(--text-muted);">Ends your current session on this device.</div>
+                </div>
+                <button type="button" class="btn btn-danger" id="btn-logout" onclick="HeliosAuth.logout()">Sign Out</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../mock/users.js"></script>
+  <script src="../mock/conversations.js"></script>
+  <script src="../mock/documents.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js?v=2"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = HeliosAuth.getCurrentUser();
+      if (!user) return;
+
+      document.getElementById('profile-avatar').textContent = user.avatar || 'U';
+      document.getElementById('profile-name').textContent = user.name || '—';
+      document.getElementById('profile-role').textContent = (user.role || '').replace('_', ' ');
+      document.getElementById('profile-org').textContent = user.organization_name || '—';
+
+      document.getElementById('field-name').value = user.name || '';
+      document.getElementById('field-email').value = user.email || '';
+      document.getElementById('field-role').value = (user.role || '').replace('_', ' ');
+      document.getElementById('field-org').value = user.organization_name || '';
+      document.getElementById('field-department').value = user.department || '';
+      document.getElementById('field-title').value = user.title || '';
+    });
+  </script>
+</body>
+</html>

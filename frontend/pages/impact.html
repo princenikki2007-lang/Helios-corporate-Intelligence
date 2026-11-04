@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Impact Engine — HELIOS</title>
+  <meta name="description" content="Automated regulatory relevance evaluation correlated with your company's profile, industry, turnover, and jurisdiction.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="impact" data-breadcrumb="Company Impact Engine">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero">
+          <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+            AUTOMATED RELEVANCE CORRELATION
+          </div>
+          <h1 class="page-hero-title">Company Impact Engine</h1>
+          <p class="page-hero-subtitle">
+            HELIOS filters out regulatory noise by matching newly notified rules against your specific company profile, state jurisdiction, turnover bracket, and active document clauses.
+          </p>
+        </div>
+
+        <!-- Active Company Parameters Profile Strip -->
+        <div class="card" style="margin-bottom: var(--space-6); background: var(--bg-surface-secondary);">
+          <div style="font-size: 0.65rem; font-weight: 700; color: var(--color-brand); text-transform: uppercase; margin-bottom: var(--space-2);">
+            EVALUATION ATTRIBUTES USED FOR MATCHING
+          </div>
+          <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--text-secondary);" id="impact-profile-strip">
+            <!-- Loaded by JS -->
+          </div>
+        </div>
+
+        <!-- Impact Cards List -->
+        <div id="impact-cards-container" style="display: flex; flex-direction: column; gap: var(--space-6);">
+          <!-- Loaded by JS -->
+        </div>
+
+        <!-- Legal Disclaimer -->
+        <div class="legal-disclaimer-box" style="margin-top: var(--space-8);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>
+            HELIOS Company Impact Engine produces operational risk assessments based on company parameters. Impact scoring is informational and does not replace formal legal counsel.
+          </span>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadImpactData();
+    });
+
+    async function loadImpactData() {
+      try {
+        const [wsRes, impRes] = await Promise.all([
+          fetch('/api/workspace'),
+          fetch('/api/impact')
+        ]);
+        const wsData = await wsRes.json();
+        const impData = await impRes.json();
+
+        if (wsData.success && wsData.workspace) {
+          const ws = wsData.workspace;
+          document.getElementById('impact-profile-strip').innerHTML = `
+            <div>🏢 Entity: <strong style="color: #FFF;">${ws.legalEntityType}</strong></div>
+            <div>📍 State: <strong style="color: #FFF;">${ws.registeredState}</strong></div>
+            <div>💻 Industry: <strong style="color: #FFF;">${ws.industry}</strong></div>
+            <div>👥 Headcount: <strong style="color: #FFF;">${ws.numberOfEmployees}</strong></div>
+            <div>💰 Turnover: <strong style="color: #FFF;">${ws.annualTurnoverRange}</strong></div>
+            <div>📝 GSTIN: <strong style="color: #FFF;">${ws.gstin || 'Registered'}</strong></div>
+          `;
+        }
+
+        if (impData.success && impData.impacts) {
+          const container = document.getElementById('impact-cards-container');
+          container.innerHTML = impData.impacts.map(imp => `
+            <div class="card" style="border-left: 4px solid ${imp.impactLevel === 'HIGH' ? '#EF4444' : imp.impactLevel === 'MEDIUM' ? '#F59E0B' : '#06B6D4'};">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
+                <div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <span class="badge ${imp.impactLevel === 'HIGH' ? 'badge-danger' : imp.impactLevel === 'MEDIUM' ? 'badge-warning' : 'badge-info'}">
+                      ● ${imp.relevance}
+                    </span>
+                    <span class="badge badge-brand">Relevance Match: ${imp.relevanceScore}%</span>
+                  </div>
+                  <h3 style="font-size: var(--font-size-md); font-weight: 700; color: #FFF; margin-top: var(--space-2);">
+                    ${imp.regulationTitle}
+                  </h3>
+                  <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-family-mono); margin-top: 2px;">
+                    Authority: ${imp.authority}
+                  </div>
+                </div>
+
+                <div style="text-align: right;">
+                  <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">IMPACT RATING</div>
+                  <div style="font-size: var(--font-size-base); font-weight: 800; color: ${imp.impactLevel === 'HIGH' ? '#F87171' : '#FBBF24'};">
+                    ${imp.impactLevel}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Why it applies -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--space-1);">
+                  WHY THIS REGULATION APPLIES TO YOUR BUSINESS:
+                </div>
+                <ul style="padding-left: var(--space-4); font-size: var(--font-size-xs); color: var(--text-primary); line-height: 1.6;">
+                  ${imp.reasons.map(r => `<li>${r}</li>`).join('')}
+                </ul>
+              </div>
+
+              <!-- Affected Departments -->
+              <div style="margin-bottom: var(--space-4);">
+                <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--space-2);">
+                  AFFECTED BUSINESS UNITS &amp; WORKFLOWS:
+                </div>
+                <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+                  ${imp.affectedOperations.map(op => `
+                    <span style="padding: 0.25rem 0.6rem; background-color: var(--bg-surface-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-xs); font-size: 0.7rem; color: var(--text-secondary);">
+                      ⚙️ ${op}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Recommended Actions -->
+              <div style="padding-top: var(--space-3); border-top: 1px solid var(--border-subtle);">
+                <div style="font-size: 0.65rem; font-weight: 700; color: var(--color-brand); text-transform: uppercase; margin-bottom: var(--space-2);">
+                  RECOMMENDED COMPLIANCE ACTIONS:
+                </div>
+                <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                  ${imp.recommendedActions.map(act => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-xs);">
+                      <div style="font-size: var(--font-size-2xs); color: var(--text-primary);">
+                        <strong style="color: ${act.priority === 'Critical' ? '#EF4444' : '#F59E0B'};">[${act.priority}]</strong> ${act.action}
+                      </div>
+                      <span class="badge ${act.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${act.status}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>

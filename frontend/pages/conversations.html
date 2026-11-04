@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Conversations — HELIOS</title>
+  <meta name="description" content="View and manage your Helios policy conversation history.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page-title="My Conversations" data-breadcrumb="Conversations">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Sidebar"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+        <!-- Page Hero -->
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <h2 class="page-hero-title">My Conversations</h2>
+            <p class="page-hero-subtitle">Browse, search, and resume your previous policy inquiries with Helios.</p>
+          </div>
+          <a href="policy-chat.html" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            New Conversation
+          </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="card" style="padding: var(--space-4); margin-bottom: var(--space-6);">
+          <div style="position: relative;">
+            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input
+              type="text"
+              id="conversation-search"
+              class="form-input"
+              placeholder="Search conversations by title or question keywords..."
+              style="padding-left: 2.5rem;"
+              oninput="handleSearch(this.value)"
+            />
+          </div>
+        </div>
+
+        <!-- Conversation Groups Container -->
+        <div id="conversations-container">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../mock/users.js"></script>
+  <script src="../mock/conversations.js"></script>
+  <script src="../mock/documents.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/policy.js"></script>
+  <script src="../js/ui.js?v=2"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let currentQuery = '';
+
+    function handleSearch(query) {
+      currentQuery = query;
+      loadAndRenderConversations();
+    }
+
+    function handleDelete(e, id, title) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (confirm(`Delete conversation "${title}"?`)) {
+        HeliosPolicy.deleteConversation(id);
+        loadAndRenderConversations();
+        HeliosUI.showToast('Conversation deleted.', 'info');
+      }
+    }
+
+    function loadAndRenderConversations() {
+      const container = document.getElementById('conversations-container');
+      const list = HeliosPolicy.getConversations(currentQuery);
+      const groups = ['Today', 'Yesterday', 'Previous 7 Days', 'Older'];
+      let html = '';
+
+      for (const group of groups) {
+        const items = list.filter(c => c.group === group);
+        if (items.length === 0) continue;
+
+        html += `
+          <div class="conv-group" style="margin-bottom: var(--space-6);">
+            <div style="font-size: var(--font-size-xs); font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-3);">
+              ${group} (${items.length})
+            </div>
+            <div class="card" style="padding: 0; overflow: hidden;">
+              ${items.map((c, i) => `
+                <div class="conv-item" id="conv-item-${c.id}" style="display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-5); ${i < items.length - 1 ? 'border-bottom: 1px solid var(--border-subtle);' : ''} cursor: pointer; transition: background-color 150ms;" onclick="window.location.href='policy-chat.html?id=${c.id}'">
+                  <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--color-brand-subtle); color: var(--color-brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                  </div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: var(--font-size-sm); font-weight: 600; color: var(--text-primary); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      ${HeliosPolicy.escapeHtml(c.title)}
+                    </div>
+                    <div style="font-size: var(--font-size-xs); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      ${HeliosPolicy.escapeHtml(c.last_message || 'No preview available')}
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: var(--space-3); flex-shrink: 0;" onclick="event.stopPropagation()">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">${c.timestamp}</span>
+                    <a href="policy-chat.html?id=${c.id}" class="btn btn-secondary btn-sm">Open &rarr;</a>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="handleDelete(event, '${c.id}', '${HeliosPolicy.escapeHtml(c.title)}')" aria-label="Delete conversation" style="color: var(--color-danger); padding: var(--space-2);">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (!html) {
+        html = `
+          <div class="card" style="text-align: center; padding: var(--space-12); color: var(--text-muted);">
+            <div style="font-size: var(--font-size-base); font-weight: 600; color: var(--text-secondary); margin-bottom: var(--space-2);">
+              ${currentQuery ? `No conversations matching "${HeliosPolicy.escapeHtml(currentQuery)}"` : 'No conversations found'}
+            </div>
+            <p style="font-size: var(--font-size-xs); margin-bottom: var(--space-4);">
+              ${currentQuery ? 'Try searching for different keywords or policy topics.' : 'Start your first policy session with Helios.'}
+            </p>
+            <a href="policy-chat.html" class="btn btn-primary">Start a New Conversation</a>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAndRenderConversations();
+    });
+  </script>
+</body>
+</html>

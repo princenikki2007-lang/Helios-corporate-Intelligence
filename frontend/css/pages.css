@@ -1,0 +1,382 @@
+/* ==========================================================================
+   HELIOS — Page-Specific Styles
+   Landing, Onboarding, Dashboard, Vault, Compare, Regs, Tax, Risk, Chat
+   ========================================================================== */
+
+/* ==========================================
+   1. LANDING PAGE
+   ========================================== */
+.landing-body {
+  background-color: #08090C;
+  color: #F8FAFC;
+  overflow-x: hidden;
+}
+
+.landing-nav {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-8);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  background-color: rgba(8, 9, 12, 0.85);
+  backdrop-filter: blur(16px);
+  z-index: 1000;
+}
+
+.landing-hero {
+  padding: var(--space-16) var(--space-6) var(--space-12);
+  text-align: center;
+  max-width: 1040px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.landing-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.35rem 0.85rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-full);
+  color: #FBBF24;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  margin-bottom: var(--space-6);
+  letter-spacing: 0.04em;
+}
+
+.landing-hero-title {
+  font-size: 3.25rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin-bottom: var(--space-6);
+  background: linear-gradient(180deg, #FFFFFF 40%, #94A3B8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-hero-subtitle {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  max-width: 720px;
+  margin: 0 auto var(--space-8);
+  line-height: 1.6;
+}
+
+.landing-cta-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-12);
+}
+
+/* Animated Intelligence Flow Visualization */
+.pipeline-visual-wrapper {
+  max-width: 980px;
+  margin: var(--space-8) auto var(--space-16);
+  background: linear-gradient(180deg, rgba(19, 24, 33, 0.9) 0%, rgba(14, 18, 23, 0.9) 100%);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(245, 158, 11, 0.1);
+}
+
+.pipeline-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.pipeline-step-box {
+  flex: 1;
+  min-width: 120px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-3);
+  text-align: center;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.pipeline-step-box:hover {
+  border-color: var(--color-brand);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.step-icon {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-2);
+}
+
+.step-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.step-desc {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.pipeline-arrow {
+  color: var(--color-brand);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+/* Landing Section */
+.landing-section {
+  padding: var(--space-16) var(--space-6);
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.section-tag {
+  font-size: 0.7rem;
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  color: var(--color-brand);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-2);
+}
+
+.section-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--space-4);
+  color: var(--text-primary);
+}
+
+.section-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin-bottom: var(--space-10);
+}
+
+.feature-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6);
+}
+
+/* ==========================================
+   2. ONBOARDING WIZARD
+   ========================================== */
+.onboarding-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.stepper-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.stepper-item.active {
+  color: var(--color-brand);
+}
+
+.stepper-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-light);
+  font-size: 0.7rem;
+  font-family: var(--font-family-mono);
+}
+
+.stepper-item.active .stepper-num {
+  background-color: var(--color-brand);
+  color: #000;
+  border-color: var(--color-brand);
+}
+
+.checkbox-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.checkbox-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.65rem 0.85rem;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.checkbox-chip:hover {
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+.checkbox-chip.selected {
+  background-color: var(--color-brand-subtle);
+  border-color: var(--color-brand);
+  color: #FBBF24;
+}
+
+/* ==========================================
+   3. DOCUMENT COMPARISON ENGINE
+   ========================================== */
+.compare-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 900px) {
+  .compare-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.compare-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+}
+
+.compare-item-box {
+  padding: var(--space-4);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-secondary);
+  border-left: 3px solid transparent;
+  margin-bottom: var(--space-3);
+}
+
+.compare-item-box.border-green {
+  border-left-color: var(--color-success);
+}
+
+.compare-item-box.border-yellow {
+  border-left-color: var(--color-warning);
+}
+
+.compare-item-box.border-red {
+  border-left-color: var(--color-danger);
+}
+
+/* ==========================================
+   4. CHAT INTERFACE & CITATIONS
+   ========================================== */
+.chat-stream-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  padding-right: var(--space-2);
+}
+
+.chat-bubble {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  max-width: 85%;
+  line-height: var(--line-height-relaxed);
+  font-size: var(--font-size-xs);
+}
+
+.chat-bubble-user {
+  align-self: flex-end;
+  background-color: var(--bg-surface-tertiary);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+
+.chat-bubble-ai {
+  align-self: flex-start;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: #E2E8F0;
+  width: 100%;
+  max-width: 92%;
+}
+
+.citation-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.citation-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.2rem 0.55rem;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xs);
+  font-size: 0.6875rem;
+  font-family: var(--font-family-mono);
+  color: var(--color-brand);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.citation-pill:hover {
+  background-color: var(--color-brand-subtle);
+  border-color: var(--color-brand);
+}
+
+/* ==========================================
+   5. DASHBOARD GRID
+   ========================================== */
+.dashboard-grid-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.dashboard-split-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-6);
+}
+
+@media (max-width: 1100px) {
+  .dashboard-split-layout {
+    grid-template-columns: 1fr;
+  }
+}

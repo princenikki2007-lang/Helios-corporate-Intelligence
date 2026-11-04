@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compliance Calendar — HELIOS</title>
+  <meta name="description" content="Unified corporate compliance calendar tracking tax deadlines, corporate filings, and regulatory effective dates.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="calendar" data-breadcrumb="Compliance Calendar">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+              STATUTORY DEADLINE INTELLIGENCE
+            </div>
+            <h1 class="page-hero-title">Unified Compliance Calendar</h1>
+            <p class="page-hero-subtitle">
+              Tax returns, license expiries, labour remittances, and gazette enforcement milestones aggregated across federal and state levels.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: var(--space-2); background: var(--bg-surface); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <button class="btn btn-primary btn-sm" id="cal-view-timeline-btn" onclick="setCalView('timeline')">Timeline View</button>
+            <button class="btn btn-ghost btn-sm" id="cal-view-table-btn" onclick="setCalView('table')">Table View</button>
+          </div>
+        </div>
+
+        <!-- Filter Pill Bar -->
+        <div class="card" style="padding: var(--space-3); margin-bottom: var(--space-6);">
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="filterCal('All')">All Events</button>
+            <button class="btn btn-ghost btn-sm" onclick="filterCal('GST')">GST &amp; Returns</button>
+            <button class="btn btn-ghost btn-sm" onclick="filterCal('Direct Tax')">Income Tax &amp; TDS</button>
+            <button class="btn btn-ghost btn-sm" onclick="filterCal('Labour')">Labour &amp; PF/ESI</button>
+            <button class="btn btn-ghost btn-sm" onclick="filterCal('License Renewal')">License Renewals</button>
+            <button class="btn btn-ghost btn-sm" onclick="filterCal('Regulatory Effective Date')">Gazette Effective Dates</button>
+          </div>
+        </div>
+
+        <!-- Timeline View Container -->
+        <div id="timeline-view-container" style="display: flex; flex-direction: column; gap: var(--space-4);">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Table View Container (Hidden by default) -->
+        <div id="table-view-container" class="card" style="display: none; padding: 0; overflow: hidden;">
+          <div class="data-table-wrapper" style="border: none;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Event Date</th>
+                  <th>Compliance Obligation</th>
+                  <th>Category</th>
+                  <th>Statutory Authority</th>
+                  <th>Severity</th>
+                  <th>Action Checklist</th>
+                </tr>
+              </thead>
+              <tbody id="cal-tbody">
+                <!-- Loaded by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    let allEvents = [];
+    let currentFilter = 'All';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCalendarEvents();
+    });
+
+    async function loadCalendarEvents() {
+      try {
+        const res = await fetch('/api/calendar');
+        const data = await res.json();
+        if (data.success && data.events) {
+          allEvents = data.events;
+          renderCalendar();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function setCalView(view) {
+      if (view === 'timeline') {
+        document.getElementById('timeline-view-container').style.display = 'flex';
+        document.getElementById('table-view-container').style.display = 'none';
+        document.getElementById('cal-view-timeline-btn').className = 'btn btn-primary btn-sm';
+        document.getElementById('cal-view-table-btn').className = 'btn btn-ghost btn-sm';
+      } else {
+        document.getElementById('timeline-view-container').style.display = 'none';
+        document.getElementById('table-view-container').style.display = 'block';
+        document.getElementById('cal-view-timeline-btn').className = 'btn btn-ghost btn-sm';
+        document.getElementById('cal-view-table-btn').className = 'btn btn-primary btn-sm';
+      }
+    }
+
+    function filterCal(cat) {
+      currentFilter = cat;
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const filtered = allEvents.filter(e => currentFilter === 'All' || e.category.toLowerCase().includes(currentFilter.toLowerCase()));
+
+      // Timeline render
+      const timelineCont = document.getElementById('timeline-view-container');
+      timelineCont.innerHTML = filtered.map(ev => `
+        <div class="card" style="border-left: 4px solid ${ev.severity === 'Critical' ? '#EF4444' : ev.severity === 'High' ? '#F59E0B' : '#3B82F6'}; display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap;">
+          <div style="display: flex; gap: var(--space-4); align-items: flex-start;">
+            <div style="padding: var(--space-2) var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-xs); text-align: center; min-width: 90px;">
+              <div style="font-family: var(--font-family-mono); font-size: var(--font-size-xs); font-weight: 700; color: var(--color-brand);">${ev.date}</div>
+              <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">STATUTORY DUE</div>
+            </div>
+
+            <div>
+              <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: 2px;">
+                <span class="badge ${ev.severity === 'Critical' ? 'badge-danger' : ev.severity === 'High' ? 'badge-warning' : 'badge-info'}">
+                  ${ev.severity} Severity
+                </span>
+                <span class="badge badge-secondary">${ev.category}</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-family-mono);">${ev.authority}</span>
+              </div>
+              <h3 style="font-size: var(--font-size-sm); font-weight: 700; color: #FFF; margin-top: 2px;">${ev.title}</h3>
+              <p style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: 2px;">${ev.action}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Table render
+      const tbody = document.getElementById('cal-tbody');
+      tbody.innerHTML = filtered.map(ev => `
+        <tr>
+          <td class="mono-cell" style="font-weight: 700; color: #FBBF24;">${ev.date}</td>
+          <td class="primary-cell">${ev.title}</td>
+          <td><span class="badge badge-secondary">${ev.category}</span></td>
+          <td class="mono-cell">${ev.authority}</td>
+          <td><span class="badge ${ev.severity === 'Critical' ? 'badge-danger' : ev.severity === 'High' ? 'badge-warning' : 'badge-info'}">${ev.severity}</span></td>
+          <td style="font-size: 0.75rem;">${ev.action}</td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

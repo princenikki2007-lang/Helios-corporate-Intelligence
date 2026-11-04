@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Document — HELIOS</title>
+  <script>window.location.replace('../index.html#documents');</script>
+  <meta name="description" content="Upload a new company policy document to the HELIOS knowledge base.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/pages.css">
+  <style>
+    .step-header { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-8); }
+    .step-item { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+    .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-xs); font-weight: 700; border: 2px solid; transition: all 200ms; }
+    .step-label { font-size: var(--font-size-xs); font-weight: 600; }
+    .step-item.done .step-circle { background: var(--color-success); border-color: var(--color-success); color: #fff; }
+    .step-item.active .step-circle { background: var(--color-brand); border-color: var(--color-brand); color: #fff; }
+    .step-item.pending .step-circle { background: transparent; border-color: var(--border-light); color: var(--text-muted); }
+    .step-item.active .step-label { color: var(--color-brand); }
+    .step-item.pending .step-label { color: var(--text-muted); }
+    .step-divider { flex: 1; height: 1px; background: var(--border-subtle); }
+    .drop-zone { border: 2px dashed var(--border-light); border-radius: var(--radius-lg); padding: var(--space-12); text-align: center; cursor: pointer; transition: all 150ms; background: var(--bg-page); }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--color-brand); background: var(--color-brand-subtle); }
+    .drop-zone.file-selected { border-color: var(--color-success); background: var(--color-success-subtle); }
+  </style>
+</head>
+<body data-page-title="Upload Document" data-breadcrumb="Documents" data-required-roles="hr_manager,company_admin">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Sidebar"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between;">
+          <div>
+            <h2 class="page-hero-title">Upload Policy Document</h2>
+            <p class="page-hero-subtitle">Add a new document to the Helios knowledge base. Supported formats: PDF, DOCX.</p>
+          </div>
+          <a href="documents.html" class="btn btn-secondary">← Back to Documents</a>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-header" id="upload-steps">
+          <div class="step-item active" id="step-indicator-1">
+            <div class="step-circle">1</div>
+            <div class="step-label">Upload File</div>
+          </div>
+          <div class="step-divider"></div>
+          <div class="step-item pending" id="step-indicator-2">
+            <div class="step-circle">2</div>
+            <div class="step-label">Document Details</div>
+          </div>
+          <div class="step-divider"></div>
+          <div class="step-item pending" id="step-indicator-3">
+            <div class="step-circle">3</div>
+            <div class="step-label">Review & Confirm</div>
+          </div>
+        </div>
+
+        <div style="max-width: 680px; margin: 0 auto;">
+
+          <!-- STEP 1: Upload File -->
+          <div id="upload-step-1" class="card">
+            <div class="card-header">
+              <div class="card-title">Step 1 — Select Your Document</div>
+            </div>
+            <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+              <input type="file" id="file-input" accept=".pdf,.docx" style="display: none;" onchange="handleFileSelect(this.files[0])">
+              <div id="drop-zone-content">
+                <div style="font-size: 2.5rem; margin-bottom: var(--space-3);">📄</div>
+                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-1);">Drag & drop your document here</div>
+                <div style="font-size: var(--font-size-xs); color: var(--text-muted); margin-bottom: var(--space-4);">or click to browse · PDF &amp; DOCX · max 50MB</div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Choose File</button>
+              </div>
+            </div>
+            <div id="file-preview" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: var(--bg-surface-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <!-- file preview injected by JS -->
+            </div>
+            <div id="file-error" style="display: none; margin-top: var(--space-3); font-size: var(--font-size-xs); color: var(--color-danger); font-weight: 500;"></div>
+            <div style="display: flex; justify-content: flex-end; margin-top: var(--space-5);">
+              <button type="button" class="btn btn-primary" id="btn-step1-next" disabled onclick="goToStep(2)">Continue</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: Document Details -->
+          <div id="upload-step-2" style="display: none;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Step 2 — Document Details</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="doc-title">Document Title <span style="color: var(--color-danger);">*</span></label>
+                <input type="text" id="doc-title" class="form-input" placeholder="e.g. Comprehensive Leave & Time-Off Policy" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="doc-type">Document Type</label>
+                <select id="doc-type" class="form-select">
+                  <option value="">Select document type</option>
+                  <option>General Policy</option>
+                  <option>Benefits &amp; Time Off</option>
+                  <option>Workplace</option>
+                  <option>Benefits &amp; Insurance</option>
+                  <option>Compliance</option>
+                  <option>Operations</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="doc-version">Version</label>
+                <input type="text" id="doc-version" class="form-input" placeholder="e.g. v3.1" />
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="doc-effective-date">Effective Date</label>
+                <input type="date" id="doc-effective-date" class="form-input" />
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: var(--space-6);">
+                <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                <button type="button" class="btn btn-primary" onclick="goToStep(3)">Review Document →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Review -->
+          <div id="upload-step-3" style="display: none;">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Step 3 — Review & Confirm Upload</div>
+              </div>
+              <div id="upload-review-summary" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <!-- Populated by JS -->
+              </div>
+              <div style="margin-top: var(--space-5); padding: var(--space-4); background: var(--color-brand-subtle); border-radius: var(--radius-md); border: 1px solid rgba(217,119,6,0.2); font-size: var(--font-size-xs); color: var(--color-brand-dark);">
+                <strong>Note:</strong> After upload, Helios will automatically process and index this document. This typically takes 2–5 minutes. The document will appear in the repository with <em>Processing</em> status until indexing is complete.
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: var(--space-6);">
+                <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                <button type="button" class="btn btn-primary" id="btn-confirm-upload" onclick="simulateUpload()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>
+                  Confirm Upload
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../mock/users.js"></script>
+  <script src="../mock/conversations.js"></script>
+  <script src="../mock/documents.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/ui.js?v=2"></script>
+  <script src="../js/documents.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    let selectedFile = null;
+    let currentStep = 1;
+
+    function handleFileSelect(file) {
+      const errorEl = document.getElementById('file-error');
+      const previewEl = document.getElementById('file-preview');
+      const dropZone = document.getElementById('drop-zone');
+      const nextBtn = document.getElementById('btn-step1-next');
+
+      errorEl.style.display = 'none';
+
+      if (!file) return;
+
+      const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const validExts = ['.pdf', '.docx'];
+      const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+      if (!validExts.includes(ext)) {
+        errorEl.textContent = 'Invalid file type. Please upload a PDF or DOCX file.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        errorEl.textContent = 'File size exceeds 50MB. Please choose a smaller file.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      selectedFile = file;
+      dropZone.classList.add('file-selected');
+
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      previewEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-3);">
+          <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-brand-subtle); color: var(--color-brand); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0;">${ext.replace('.','').toUpperCase()}</div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 600; font-size: var(--font-size-xs); color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted);">${sizeMB} MB</div>
+          </div>
+          <span class="badge badge-success">Ready</span>
+        </div>
+      `;
+      previewEl.style.display = 'block';
+      nextBtn.disabled = false;
+    }
+
+    // Drag & drop
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+    });
+
+    function goToStep(step) {
+      // Hide all steps
+      [1, 2, 3].forEach(n => {
+        document.getElementById(`upload-step-${n}`).style.display = 'none';
+        const ind = document.getElementById(`step-indicator-${n}`);
+        ind.className = `step-item ${n < step ? 'done' : n === step ? 'active' : 'pending'}`;
+        if (n < step) {
+          ind.querySelector('.step-circle').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        } else {
+          ind.querySelector('.step-circle').textContent = n;
+        }
+      });
+      document.getElementById(`upload-step-${step}`).style.display = 'block';
+      currentStep = step;
+
+      if (step === 3) buildReviewSummary();
+    }
+
+    function buildReviewSummary() {
+      const reviewEl = document.getElementById('upload-review-summary');
+      const rows = [
+        ['File', selectedFile ? selectedFile.name : '—'],
+        ['File Size', selectedFile ? `${(selectedFile.size / (1024*1024)).toFixed(2)} MB` : '—'],
+        ['Document Title', document.getElementById('doc-title').value || '—'],
+        ['Document Type', document.getElementById('doc-type').value || '—'],
+        ['Version', document.getElementById('doc-version').value || '—'],
+        ['Effective Date', document.getElementById('doc-effective-date').value || '—']
+      ];
+      reviewEl.innerHTML = rows.map(([label, val]) => `
+        <div style="display: flex; justify-content: space-between; padding: var(--space-3) 0; border-bottom: 1px solid var(--border-subtle); font-size: var(--font-size-xs);">
+          <span style="color: var(--text-muted); font-weight: 500;">${label}</span>
+          <span style="color: var(--text-primary); font-weight: 600; text-align: right;">${val}</span>
+        </div>
+      `).join('');
+    }
+
+    async function simulateUpload() {
+      const btn = document.getElementById('btn-confirm-upload');
+      btn.disabled = true;
+      btn.innerHTML = `<span style="display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 6px;"></span> Uploading...`;
+
+      await new Promise(r => setTimeout(r, 1800));
+
+      HeliosUI.showToast('Document uploaded and queued for processing.', 'success', 4000);
+      setTimeout(() => { window.location.href = 'documents.html'; }, 500);
+    }
+
+    // Add CSS spin animation
+    const styleEl = document.createElement('style');
+    styleEl.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(styleEl);
+  </script>
+</body>
+</html>

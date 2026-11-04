@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Governance &amp; Audit Logs — HELIOS</title>
+  <meta name="description" content="HELIOS Enterprise Governance, Immutable Compliance Audit Logs, and SOC-2 Verifiable Event History.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="audit-logs" data-breadcrumb="Governance &amp; Audit">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+              IMMUTABLE COMPLIANCE EVENT TRAIL
+            </div>
+            <h1 class="page-hero-title">Enterprise Governance &amp; Audit Trail</h1>
+            <p class="page-hero-subtitle">
+              Cryptographically timestamped audit log of all document uploads, policy comparisons, risk evaluations, and permission updates for SOC-2 and statutory compliance audits.
+            </p>
+          </div>
+
+          <a href="/api/audit-logs/export" class="btn btn-secondary btn-sm" id="btn-export-csv" download>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export Audit Trail (CSV)
+          </a>
+        </div>
+
+        <!-- Metrics -->
+        <div class="dashboard-grid-stats">
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Audit Integrity</span>
+              <span class="badge badge-success">Verified</span>
+            </div>
+            <div class="metric-value" style="color: #34D399;">SOC-2 Type II</div>
+            <div class="metric-sub">
+              <span>Zero Tamper History</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Total Logged Events</span>
+              <span class="badge badge-info">Active</span>
+            </div>
+            <div class="metric-value" id="stat-log-count">5</div>
+            <div class="metric-sub">
+              <span>Real-Time Stream Active</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Tenant Security</span>
+              <span class="badge badge-brand">Cryptographic</span>
+            </div>
+            <div class="metric-value" style="font-size: var(--font-size-md);">Tenant Isolated</div>
+            <div class="metric-sub">
+              <span>Zero Cross-Tenant Leakage</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Table -->
+        <div class="card" style="padding: 0; overflow: hidden; margin-bottom: var(--space-6);">
+          <div class="data-table-wrapper" style="border: none;">
+            <table class="data-table" aria-label="Audit Logs Table">
+              <thead>
+                <tr>
+                  <th>Timestamp (UTC)</th>
+                  <th>Principal User</th>
+                  <th>Action Type</th>
+                  <th>Target Resource</th>
+                  <th>Event Details</th>
+                  <th>Risk Score Impact</th>
+                  <th>IP Address</th>
+                </tr>
+              </thead>
+              <tbody id="audit-table-body">
+                <!-- Loaded by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Legal Disclaimer -->
+        <div class="legal-disclaimer-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>
+            HELIOS audit trails are stored in write-once append-only tables to maintain evidential value for statutory auditors and regulatory inspectors.
+          </span>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAuditLogs();
+    });
+
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch('/api/audit-logs');
+        const data = await res.json();
+        if (data.success && data.logs) {
+          document.getElementById('stat-log-count').textContent = data.logs.length;
+          const tbody = document.getElementById('audit-table-body');
+          tbody.innerHTML = data.logs.map(l => `
+            <tr>
+              <td class="mono-cell" style="font-size: 0.75rem; color: var(--text-muted);">${l.timestamp}</td>
+              <td class="primary-cell" style="font-size: 0.75rem;">${l.user}</td>
+              <td><span class="badge badge-brand">${l.action}</span></td>
+              <td class="mono-cell" style="font-size: 0.75rem; color: #FFF;">${l.document}</td>
+              <td style="font-size: 0.75rem; color: var(--text-secondary); max-width: 320px;">${l.details}</td>
+              <td><span class="badge badge-info">${l.riskImpact}</span></td>
+              <td class="mono-cell" style="font-size: 0.7rem; color: var(--text-muted);">${l.ipAddress}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>

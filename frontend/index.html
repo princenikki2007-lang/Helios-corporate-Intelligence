@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HELIOS — AI Corporate Legal Assistant</title>
+  <meta name="description" content="A minimal, intelligent corporate legal assistant for uploading documents, extracting text, querying clauses and obligations, and identifying potential risks with Gemini.">
+  
+  <!-- OpenGraph Metadata -->
+  <meta property="og:title" content="HELIOS — AI Corporate Legal Assistant">
+  <meta property="og:description" content="A minimal, intelligent corporate legal assistant for uploading documents, extracting text, querying clauses and obligations, and identifying potential risks with Gemini.">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts & Stylesheet -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/helios-app.css">
+</head>
+<body>
+
+<div class="app-layout">
+  
+  <!-- ========================================================
+       SIDEBAR NAVIGATION (Dark Navy / Charcoal)
+       ======================================================== -->
+  <aside class="app-sidebar">
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <span class="brand-name">HELIOS</span>
+        <span class="brand-tagline">Legal AI Assistant</span>
+      </div>
+    </div>
+
+    <!-- Navigation Items (Exactly 3 Essential Items) -->
+    <nav class="sidebar-nav">
+      <div class="nav-label">Navigation</div>
+      
+      <!-- 1. Dashboard -->
+      <a class="nav-item active" data-view="dashboard" href="#dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+
+      <!-- 2. Documents -->
+      <a class="nav-item" data-view="documents" href="#documents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Documents</span>
+        <span class="nav-badge" id="sidebar-doc-count">3</span>
+      </a>
+
+      <!-- 3. AI Assistant -->
+      <a class="nav-item" data-view="assistant" href="#assistant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <path d="M8 9h8"></path>
+          <path d="M8 13h5"></path>
+        </svg>
+        <span>AI Assistant</span>
+      </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <div class="project-tag">
+        <div class="project-tag-title">Clause-to-Action</div>
+        <div class="project-tag-desc">Evidence-First Legal AI · College Demo</div>
+      </div>
+      <div class="status-row">
+        <span class="status-dot"></span>
+        <span id="backend-status">Connected · Gemini 3.8 Flash</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================
+       MAIN APPLICATION AREA
+       ======================================================== -->
+  <main class="app-main">
+    
+    <!-- Topbar -->
+    <header class="app-topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="breadcrumb-trail">
+          <span>HELIOS</span>
+          <span>/</span>
+          <span class="breadcrumb-active" id="breadcrumb-current">Dashboard</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="doc-context-badge" id="topbar-doc-count">3 Docs</span>
+        <button class="btn btn-primary btn-sm" id="topbar-upload-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Upload Document
+        </button>
+      </div>
+    </header>
+
+    <!-- Body Container -->
+    <div class="content-body">
+
+      <!-- ====================================================
+           VIEW 1: DASHBOARD
+           ==================================================== -->
+      <section class="view-section active" id="view-dashboard">
+        
+        <!-- Welcome Hero -->
+        <div class="welcome-banner">
+          <div>
+            <h1 class="welcome-title">HELIOS Legal Intelligence</h1>
+            <p class="welcome-sub">
+              Your AI-powered assistant for uploading legal documents, translating clauses into actionable steps, verifying evidence excerpts, and generating Before-You-Sign review checklists with Gemini.
+            </p>
+          </div>
+          <button class="btn btn-primary btn-lg" onclick="window.location.hash='assistant'">
+            Ask HELIOS Assistant →
+          </button>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            </div>
+            <div>
+              <div class="stat-label">Uploaded Documents</div>
+              <div class="stat-value" id="dash-doc-count">3</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-gold">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+            </div>
+            <div>
+              <div class="stat-label">Intelligence Modules</div>
+              <div class="stat-value" style="font-size: 1.1rem;">Clause Translator &amp; Checklist</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+            </div>
+            <div>
+              <div class="stat-label">Evidence-First Engine</div>
+              <div class="stat-value" style="font-size: 1.15rem;">Gemini 3.8 Flash</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Documents Table -->
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            Recent Documents in Vault
+          </h2>
+          <a class="btn btn-secondary btn-sm" href="#documents">View All Documents →</a>
+        </div>
+
+        <div class="doc-table-card">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Document Name</th>
+                <th>Upload Date</th>
+                <th>File Size / Words</th>
+                <th>Pages</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dash-recent-table">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Quick AI Prompt Shortcuts -->
+        <div class="card" style="margin-top: 1.5rem; background: #FFFFFF;">
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">
+            💡 Quick Analysis Questions
+          </h3>
+          <p style="font-size: 0.825rem; color: #64748B; margin-bottom: 0.85rem;">
+            Click any question to open the AI Assistant with your active document:
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <button class="suggestion-pill" data-question="What is this document about?">What is this document about?</button>
+            <button class="suggestion-pill" data-question="What are its important clauses?">What are its important clauses?</button>
+            <button class="suggestion-pill" data-question="What obligations or deadlines are mentioned?">What obligations or deadlines are mentioned?</button>
+            <button class="suggestion-pill" data-question="Are there any potentially risky or unclear clauses?">Are there any potentially risky or unclear clauses?</button>
+            <button class="suggestion-pill" data-question="Summarize this document in simple English.">Summarize this document in simple English.</button>
+          </div>
+        </div>
+
+        <!-- Legal Disclaimer -->
+        <div class="disclaimer-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <div>
+            <strong>Educational Project Notice:</strong> HELIOS is an informational corporate legal document assistant built for college demonstration purposes. AI-generated analysis is purely informational and does not constitute formal legal advice.
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================
+           VIEW 2: DOCUMENTS (Upload & Text Extraction)
+           ==================================================== -->
+      <section class="view-section" id="view-documents">
+        
+        <div class="section-header">
+          <div>
+            <h1 class="welcome-title" style="font-size: 1.4rem; margin-bottom: 0.2rem;">Document Vault &amp; Clause Analysis</h1>
+            <p style="font-size: 0.85rem; color: #64748B;">Upload PDF or TXT legal files to parse clean text, translate clauses into actionable steps, and generate Before-You-Sign review checklists.</p>
+          </div>
+        </div>
+
+        <!-- Upload Alert Box -->
+        <div id="upload-alert" class="alert-box alert-danger" style="display: none;"></div>
+
+        <!-- Drag & Drop Upload Zone -->
+        <div class="upload-dropzone" id="upload-dropzone">
+          <input type="file" id="file-input" accept=".pdf,.txt" style="display: none;">
+          <div class="upload-icon-wrapper">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          </div>
+          <div class="upload-title">Drop PDF or TXT document here, or click to browse</div>
+          <p class="upload-hint">Supports contract PDFs with selectable text and plain text (.txt) files up to 20 MB. Extracted text is stored locally on the server.</p>
+        </div>
+
+        <!-- Upload Progress Indicator -->
+        <div id="upload-progress" class="alert-box alert-info" style="display: none; align-items: center;">
+          <div class="typing-dots">
+            <div class="typing-dot" style="background-color: #2563EB;"></div>
+            <div class="typing-dot" style="background-color: #2563EB;"></div>
+            <div class="typing-dot" style="background-color: #2563EB;"></div>
+          </div>
+          <span>Uploading document and extracting text with PDF parser... Please wait.</span>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap;">
+          <input 
+            type="text" 
+            id="doc-search-input" 
+            placeholder="Search documents by title, filename, or keyword..." 
+            class="doc-select-input" 
+            style="max-width: 400px;"
+          >
+          <span style="font-size: 0.8rem; color: #64748B;">
+            Use <strong>Clauses to Actions</strong> to identify obligations and risks, or <strong>Review Checklist</strong> before signing.
+          </span>
+        </div>
+
+        <!-- Document Cards List -->
+        <div id="docs-list">
+          <!-- Dynamically populated -->
+        </div>
+
+      </section>
+
+      <!-- ====================================================
+           VIEW 3: AI ASSISTANT (Evidence-First Gemini Q&A)
+           ==================================================== -->
+      <section class="view-section" id="view-assistant">
+        
+        <div class="assistant-layout">
+          
+          <!-- Assistant Header & Document Selection -->
+          <div class="assistant-header">
+            <div class="doc-selector-group">
+              <label for="assistant-doc-select" style="font-size: 0.85rem; font-weight: 700; color: #0F172A; white-space: nowrap;">
+                Active Document:
+              </label>
+              <select id="assistant-doc-select" class="doc-select-input">
+                <!-- Dynamically populated -->
+              </select>
+              <span id="doc-context-badge" class="doc-context-badge">
+                Loading...
+              </span>
+            </div>
+            
+            <!-- Quick Intelligence Toolbar -->
+            <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" id="assistant-clauses-btn" style="display: none;" title="Translate clauses to actions">
+                ⚡ Translate Clauses
+              </button>
+              <button class="btn btn-secondary btn-sm" id="assistant-checklist-btn" style="display: none;" title="Before-You-Sign Review Checklist">
+                📋 Review Checklist
+              </button>
+              <button class="btn btn-secondary btn-sm" id="view-source-btn" style="display: none;">
+                👁️ View Text
+              </button>
+            </div>
+          </div>
+
+          <!-- Assistant Alert -->
+          <div id="assistant-alert" class="alert-box alert-warning" style="display: none; margin: 0.75rem 1.5rem 0;"></div>
+
+          <!-- Quick Suggestions Bar -->
+          <div class="suggestion-bar">
+            <span class="suggestion-label">Suggested:</span>
+            <button class="suggestion-pill" data-question="What is this document about?">What is this document about?</button>
+            <button class="suggestion-pill" data-question="What are its important clauses?">What are its important clauses?</button>
+            <button class="suggestion-pill" data-question="What obligations or deadlines are mentioned?">What obligations or deadlines are mentioned?</button>
+            <button class="suggestion-pill" data-question="Are there any potentially risky or unclear clauses?">Are there any potentially risky or unclear clauses?</button>
+            <button class="suggestion-pill" data-question="Summarize this document in simple English.">Summarize this document in simple English.</button>
+          </div>
+
+          <!-- Chat Thread -->
+          <div class="chat-thread" id="chat-thread">
+            <div class="chat-message ai-message">
+              <div class="message-avatar avatar-ai">☀️</div>
+              <div class="message-bubble">
+                <p><strong>Hello! I am HELIOS, your Evidence-First AI Legal Assistant.</strong></p>
+                <p style="margin-top: 0.4rem; color: #475569;">
+                  Select a document above, then ask any question. Every answer includes verifiable supporting document excerpts via the <strong>View Evidence</strong> drawer.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input Bar -->
+          <div class="chat-input-wrapper">
+            <button class="btn btn-secondary btn-sm" id="clear-chat-btn" title="Clear chat history" style="height: 48px;">
+              Reset
+            </button>
+            <textarea 
+              id="chat-input" 
+              class="chat-input" 
+              placeholder="Ask a question about the active document (e.g., 'What are the termination conditions and notice periods?')..."
+              rows="1"
+            ></textarea>
+            <button class="btn btn-primary" id="chat-send-btn" style="height: 48px; padding: 0 1.25rem;">
+              <span>Send</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ========================================================
+     DOCUMENT TEXT VIEWER MODAL
+     ======================================================== -->
+<div class="modal-overlay" id="text-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-doc-title" style="font-size: 1.15rem; font-weight: 700; color: #0F172A;">Document Title</h3>
+        <p id="modal-doc-meta" style="font-size: 0.75rem; color: #64748B; margin-top: 2px;">Metadata</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="modal-close-btn" style="font-size: 1.2rem; line-height: 1; padding: 0.2rem 0.6rem;">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size: 0.8rem; font-weight: 700; color: #64748B; margin-bottom: 0.5rem; text-transform: uppercase;">
+        Extracted Document Text:
+      </div>
+      <div id="modal-doc-text" class="extracted-text-box">
+        Loading...
+      </div>
+    </div>
+    <div class="modal-footer" style="flex-wrap: wrap; gap: 0.5rem;">
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn btn-secondary btn-sm" id="modal-copy-btn">
+          📋 Copy Text
+        </button>
+        <button class="btn btn-primary btn-sm" id="modal-clauses-btn">
+          ⚡ Translate Clauses
+        </button>
+        <button class="btn btn-secondary btn-sm" id="modal-checklist-btn">
+          📋 Review Checklist
+        </button>
+      </div>
+      <button class="btn btn-primary btn-sm" id="modal-ask-btn">
+        💬 Ask AI About This Document
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     INTELLIGENCE MODAL (Clause-to-Action & Checklist Results)
+     ======================================================== -->
+<div class="modal-overlay" id="intel-modal">
+  <div class="modal-card" style="max-width: 960px;">
+    <div class="modal-header">
+      <div>
+        <h3 id="intel-modal-title" style="font-size: 1.15rem; font-weight: 700; color: #0F172A;">
+          Clause-to-Action Intelligence
+        </h3>
+        <p id="intel-modal-meta" style="font-size: 0.75rem; color: #64748B; margin-top: 2px;">
+          Grounded Analysis
+        </p>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="intel-modal-close-btn" style="font-size: 1.2rem; line-height: 1; padding: 0.2rem 0.6rem;">&times;</button>
+    </div>
+    <div class="modal-body" id="intel-modal-body">
+      <!-- Dynamically populated with Clause Cards or Checklist Items -->
+    </div>
+    <div class="modal-footer">
+      <span style="font-size: 0.75rem; color: #64748B;">
+        Generated using Google Gemini 3.8 Flash · Zero-Hallucination Grounding
+      </span>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('intel-modal').classList.remove('open')">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/helios-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Against Rules — HELIOS</title>
+  <meta name="description" content="Compare company documents against current statutory regulations with itemized Green, Yellow, and Red compliance checks.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="compare" data-breadcrumb="Compare vs Rules">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero">
+          <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+            STATUTORY HEURISTIC CROSS-CHECK
+          </div>
+          <h1 class="page-hero-title">Document Comparison Engine</h1>
+          <p class="page-hero-subtitle">
+            Select an uploaded corporate document to compare its clauses, registrations, and dates against currently active statutory regulations and gazettes.
+          </p>
+        </div>
+
+        <!-- Document & Regulation Selector Controls -->
+        <div class="card" style="margin-bottom: var(--space-6);">
+          <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: var(--space-4); align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Select Company Document *</label>
+              <select id="select-doc" class="form-select" onchange="runComparison()">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Statutory Rule Baseline</label>
+              <input type="text" id="statutory-baseline" class="form-input" readonly value="Auto-matched to Document Category" style="color: var(--text-muted);" />
+            </div>
+
+            <button class="btn btn-primary" onclick="runComparison()">
+              Run Comparison ⚖️
+            </button>
+          </div>
+        </div>
+
+        <!-- Comparison Results Header -->
+        <div id="comparison-header-box" class="card card-elevated" style="margin-bottom: var(--space-6); display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+            <div>
+              <div style="font-size: 0.7rem; font-family: var(--font-family-mono); color: var(--color-brand); text-transform: uppercase; font-weight: 700;">
+                STATUTORY FRAMEWORK
+              </div>
+              <h2 id="comp-reg-title" style="font-size: var(--font-size-md); color: var(--text-primary); margin-top: 2px;">
+                Central Goods and Services Tax Act 2017 &amp; CBIC Notifications 2026
+              </h2>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+              <span id="comp-overall-badge" class="badge badge-warning">Review Recommended</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Itemized Comparison Cards -->
+        <div id="comparison-results-list" style="display: flex; flex-direction: column; gap: var(--space-4);">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Legal Responsibility Notice -->
+        <div class="legal-disclaimer-box" style="margin-top: var(--space-8);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>
+            HELIOS comparison engine highlights potential statutory conflicts based on public gazette notifications. Never claim definitive compliance unless formally verified against official government registers with legal counsel.
+          </span>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    let documentsList = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadDocsList();
+      const urlParams = new URLSearchParams(window.location.search);
+      const docId = urlParams.get('id');
+      if (docId) {
+        document.getElementById('select-doc').value = docId;
+      }
+      runComparison();
+    });
+
+    async function loadDocsList() {
+      try {
+        const res = await fetch('/api/documents');
+        const data = await res.json();
+        if (data.success && data.documents) {
+          documentsList = data.documents;
+          const select = document.getElementById('select-doc');
+          select.innerHTML = documentsList.map(d => `
+            <option value="${d.id}">${d.title} (${d.category} · ${d.docType})</option>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function runComparison() {
+      const select = document.getElementById('select-doc');
+      const docId = select.value;
+      if (!docId) return;
+
+      const container = document.getElementById('comparison-results-list');
+      container.innerHTML = '<div style="padding: var(--space-8); text-align: center; color: var(--text-muted);">Comparing document against statutory requirements...</div>';
+
+      try {
+        const res = await fetch(`/api/documents/${docId}/compare`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('comparison-header-box').style.display = 'block';
+          document.getElementById('comp-reg-title').textContent = data.applicableRegulation;
+          document.getElementById('statutory-baseline').value = data.applicableRegulation;
+
+          const overallBadge = document.getElementById('comp-overall-badge');
+          overallBadge.textContent = data.overallComplianceStatus;
+          overallBadge.className = `badge ${data.overallComplianceStatus.includes('Action') ? 'badge-danger' : data.overallComplianceStatus.includes('Review') ? 'badge-warning' : 'badge-success'}`;
+
+          container.innerHTML = data.results.map(r => `
+            <div class="card" style="border-left: 4px solid ${r.color === 'GREEN' ? '#10B981' : r.color === 'YELLOW' ? '#F59E0B' : '#EF4444'};">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3);">
+                <div>
+                  <h3 style="font-size: var(--font-size-sm); font-weight: 700; color: var(--text-primary);">${r.item}</h3>
+                  <div style="font-size: 0.65rem; color: var(--color-brand); font-family: var(--font-family-mono); margin-top: 2px;">
+                    Statutory Rule: ${r.source}
+                  </div>
+                </div>
+                <span class="badge ${r.color === 'GREEN' ? 'badge-success' : r.color === 'YELLOW' ? 'badge-warning' : 'badge-danger'}">
+                  ${r.color === 'GREEN' ? '✓ Compliant' : r.color === 'YELLOW' ? '⚠ Needs Review' : '✕ Potential Conflict'}
+                </span>
+              </div>
+
+              <div class="compare-container" style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-subtle);">
+                <div>
+                  <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">CURRENT DOCUMENT</div>
+                  <div style="font-size: var(--font-size-xs); color: var(--text-secondary); background: var(--bg-surface-secondary); padding: var(--space-3); border-radius: var(--radius-xs);">
+                    ${r.currentDocument}
+                  </div>
+                </div>
+
+                <div>
+                  <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">CURRENT REQUIREMENTS</div>
+                  <div style="font-size: var(--font-size-xs); color: var(--text-primary); background: var(--bg-surface-secondary); padding: var(--space-3); border-radius: var(--radius-xs);">
+                    ${r.currentRequirement}
+                  </div>
+                </div>
+              </div>
+
+              ${r.note ? `
+                <div style="margin-top: var(--space-3); padding: var(--space-2) var(--space-3); background-color: rgba(245, 158, 11, 0.08); border-radius: var(--radius-xs); font-size: var(--font-size-2xs); color: #FBBF24;">
+                  ℹ️ <strong>Observation:</strong> ${r.note}
+                </div>
+              ` : ''}
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        container.innerHTML = '<div style="color: #EF4444; padding: var(--space-4);">Failed to execute rule comparison.</div>';
+      }
+    }
+  </script>
+</body>
+</html>

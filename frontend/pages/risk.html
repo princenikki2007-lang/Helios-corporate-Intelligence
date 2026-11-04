@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Risk Engine — HELIOS</title>
+  <meta name="description" content="Explainable compliance risk score across Tax, Corporate, HR, Data Privacy, and Statutory Licenses.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="risk" data-breadcrumb="Company Risk Engine">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero">
+          <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+            EXPLAINABLE STATUTORY AUDIT HEURISTICS
+          </div>
+          <h1 class="page-hero-title">Company Compliance Risk Engine</h1>
+          <p class="page-hero-subtitle">
+            HELIOS evaluates 8 risk dimensions using verified company filings, expiration dates, and active gazette rules. Every point is explainable.
+          </p>
+        </div>
+
+        <!-- Overall Score Card -->
+        <div class="card card-elevated" style="margin-bottom: var(--space-6);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-6);">
+            <div>
+              <div style="font-size: 0.7rem; font-family: var(--font-family-mono); color: var(--color-brand); text-transform: uppercase; font-weight: 700;">
+                OVERALL COMPOSITE COMPLIANCE RISK
+              </div>
+              <div style="display: flex; align-items: baseline; gap: var(--space-3); margin-top: var(--space-2);">
+                <span id="risk-overall-score" style="font-family: var(--font-family-mono); font-size: 3.5rem; font-weight: 800; color: #10B981; line-height: 1;">
+                  28
+                </span>
+                <span style="font-size: var(--font-size-lg); color: var(--text-muted); font-family: var(--font-family-mono);">/ 100</span>
+                <span id="risk-tier-badge" class="badge badge-success" style="font-size: var(--font-size-xs); padding: 0.25rem 0.65rem;">
+                  Low Risk Tier
+                </span>
+              </div>
+              <p style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: var(--space-3); max-width: 540px;">
+                Your overall statutory compliance health is strong. Active risks stem primarily from the approaching Karnataka Commercial Establishments license renewal and pending DPDP privacy consent updates.
+              </p>
+            </div>
+
+            <div style="background-color: var(--bg-surface); padding: var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); min-width: 260px;">
+              <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: var(--space-2);">
+                RISK TIER THRESHOLDS
+              </div>
+              <div style="display: flex; flex-direction: column; gap: var(--space-2); font-size: 0.75rem;">
+                <div style="display: flex; justify-content: space-between;"><span style="color: #10B981;">● 0 - 35</span><span>Low (Compliant)</span></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #F59E0B;">● 36 - 59</span><span>Moderate (Review Recommended)</span></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #EF4444;">● 60 - 100</span><span>Critical (Immediate Action Required)</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8-Category Dimension Breakdown -->
+        <div class="card" style="margin-bottom: var(--space-6);">
+          <div class="card-header">
+            <div class="card-title">Categorized Risk Vector Breakdown</div>
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-family-mono);">Scale: 0 (Safest) — 100 (Highest Risk)</span>
+          </div>
+
+          <div id="risk-dimensions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4);">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Explainable Drivers -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-brand);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span>Explainable Risk Drivers &amp; Specific Causes</span>
+            </div>
+            <span class="badge badge-brand">Audit Explainability Guaranteed</span>
+          </div>
+
+          <div id="risk-drivers-full-list" style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadRiskEngine();
+    });
+
+    async function loadRiskEngine() {
+      try {
+        const res = await fetch('/api/risk');
+        const data = await res.json();
+        if (data.success && data.risk) {
+          const r = data.risk;
+          document.getElementById('risk-overall-score').textContent = r.overallScore;
+          document.getElementById('risk-tier-badge').textContent = `${r.riskTier} Risk Tier`;
+
+          // Dimensions Grid
+          const dimGrid = document.getElementById('risk-dimensions-grid');
+          const dimLabels = {
+            tax: "Indirect & Direct Tax",
+            corporate: "Companies Act & MCA",
+            legal: "Legal Contracts & IP",
+            hr: "HR & Labour Codes",
+            documents: "Document Vault Expiry",
+            regulatory: "Gazette Rule Alignment",
+            dataPrivacy: "DPDP & Data Privacy",
+            licenses: "Municipal & Trade Permits"
+          };
+
+          dimGrid.innerHTML = Object.entries(r.breakdown).map(([k, val]) => `
+            <div style="padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary);">${dimLabels[k] || k}</span>
+                <span style="font-family: var(--font-family-mono); font-size: 0.85rem; font-weight: 700; color: ${val > 40 ? '#FBBF24' : '#34D399'};">${val} / 100</span>
+              </div>
+              <div style="width: 100%; height: 4px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-full); overflow: hidden;">
+                <div style="width: ${val}%; height: 100%; background: ${val > 40 ? '#F59E0B' : '#10B981'};"></div>
+              </div>
+            </div>
+          `).join('');
+
+          // Drivers
+          const driversCont = document.getElementById('risk-drivers-full-list');
+          driversCont.innerHTML = r.drivers.map(drv => `
+            <div style="padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-xs); border-left: 3px solid ${drv.severity === 'High' ? '#EF4444' : '#F59E0B'};">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <span style="font-size: var(--font-size-xs); font-weight: 700; color: #FFF;">${drv.category}</span>
+                <span style="font-family: var(--font-family-mono); font-size: 0.75rem; color: #F87171; font-weight: 700;">${drv.scoreWeight} Risk Points</span>
+              </div>
+              <p style="font-size: var(--font-size-2xs); color: var(--text-secondary); line-height: 1.5; margin-top: 2px;">
+                ${drv.explanation}
+              </p>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>

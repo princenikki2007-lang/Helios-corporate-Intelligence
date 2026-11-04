@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parliament &amp; Policy Watch — HELIOS</title>
+  <meta name="description" content="Track parliamentary bills, legislative drafts, and policy consultations with strict legal status classification.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="policy-watch" data-breadcrumb="Parliament Watch">
+
+  <div class="app-layout">
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <div class="app-main">
+      <header class="app-header" id="app-header"></header>
+
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero">
+          <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+            LEGISLATIVE RADAR &amp; DRAFT RULES
+          </div>
+          <h1 class="page-hero-title">Parliament &amp; Public Policy Watch</h1>
+          <p class="page-hero-subtitle">
+            Track upcoming legislative bills, standing committee reports, and draft consultative rules before they become binding statutory law.
+          </p>
+        </div>
+
+        <!-- Strict Legal Status Disclaimer Banner -->
+        <div class="card card-elevated" style="margin-bottom: var(--space-6); border: 1px solid rgba(139, 92, 246, 0.3);">
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <span style="font-size: 1.5rem;">⚖️</span>
+            <div>
+              <div style="font-size: var(--font-size-xs); font-weight: 700; color: #FFF;">
+                MANDATORY STATUTORY STATUS CLASSIFICATION PRINCIPLE
+              </div>
+              <p style="font-size: var(--font-size-2xs); color: var(--text-secondary); margin-top: 2px;">
+                HELIOS strictly distinguishes between <strong>PROPOSED LEGISLATION</strong> (Drafts &amp; Bills not enforceable) and <strong>ENFORCEABLE LAW</strong> (Passed, Notified &amp; Active). Never treat draft proposals or parliamentary reports as binding legal requirements.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legislative Items List -->
+        <div id="policy-watch-container" style="display: flex; flex-direction: column; gap: var(--space-6);">
+          <!-- Loaded by JS -->
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPolicyWatch();
+    });
+
+    async function loadPolicyWatch() {
+      try {
+        const res = await fetch('/api/policy-watch');
+        const data = await res.json();
+        if (data.success && data.policyItems) {
+          const container = document.getElementById('policy-watch-container');
+          container.innerHTML = data.policyItems.map(item => `
+            <div class="card" style="border-left: 4px solid ${item.isEnforceable ? '#10B981' : '#8B5CF6'};">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-3); flex-wrap: wrap; gap: var(--space-2);">
+                <div>
+                  <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <span class="${item.isEnforceable ? 'tag-effective' : 'tag-proposed'}">
+                      ● ${item.legalStatusTag}
+                    </span>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-family-mono);">${item.governmentBody}</span>
+                  </div>
+                  <h3 style="font-size: var(--font-size-md); font-weight: 700; color: #FFF; margin-top: var(--space-2);">
+                    ${item.title}
+                  </h3>
+                </div>
+
+                <div style="font-size: 0.7rem; font-family: var(--font-family-mono); color: var(--text-muted);">
+                  Introduced: ${item.introducedDate}
+                </div>
+              </div>
+
+              <!-- Latest Update & Legislative Stage -->
+              <div style="padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-xs); margin-bottom: var(--space-3);">
+                <div style="font-size: 0.65rem; font-weight: 700; color: var(--color-brand); text-transform: uppercase; margin-bottom: 2px;">
+                  CURRENT LEGISLATIVE STAGE &amp; TIMELINE:
+                </div>
+                <div style="font-size: var(--font-size-xs); color: var(--text-primary); line-height: 1.5;">
+                  ${item.latestUpdate}
+                </div>
+              </div>
+
+              <!-- Potential Company Impact -->
+              <div style="margin-bottom: var(--space-3);">
+                <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px;">
+                  ANTICIPATED BUSINESS IMPACT:
+                </div>
+                <div style="font-size: var(--font-size-2xs); color: var(--text-secondary); line-height: 1.5;">
+                  ${item.potentialCompanyImpact}
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: var(--space-2); font-size: 0.7rem; font-family: var(--font-family-mono);">
+                <span style="color: var(--text-muted);">${item.officialSource}</span>
+                <span class="badge ${item.isEnforceable ? 'badge-success' : 'badge-brand'}">
+                  ${item.isEnforceable ? 'Legally Enforceable' : 'Non-Binding Proposal'}
+                </span>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>

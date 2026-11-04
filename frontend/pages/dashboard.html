@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Center Dashboard — HELIOS</title>
+  <script>window.location.replace('../index.html#dashboard');</script>
+  <meta name="description" content="HELIOS Legal & Compliance Command Center Dashboard.">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+<body data-page="dashboard" data-breadcrumb="Compliance Command Center">
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <!-- Main Content Area -->
+    <div class="app-main">
+      <!-- Header -->
+      <header class="app-header" id="app-header"></header>
+
+      <!-- App Content -->
+      <main class="app-content">
+
+        <!-- Page Hero -->
+        <div class="page-hero" style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4);">
+          <div>
+            <div style="font-size: var(--font-size-2xs); font-family: var(--font-family-mono); color: var(--color-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">
+              LEGAL &amp; COMPLIANCE COMMAND CENTER
+            </div>
+            <h1 class="page-hero-title" id="dash-company-name">Zephyr Technologies Private Limited</h1>
+            <p class="page-hero-subtitle" id="dash-company-sub">
+              CIN: U72900KA2022PTC158941 · State: Karnataka · Industry: Software &amp; SaaS · Turnover: ₹5 Cr - ₹25 Cr
+            </p>
+          </div>
+
+          <div style="display: flex; gap: var(--space-2);">
+            <a href="documents.html" class="btn btn-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              Upload Document
+            </a>
+            <a href="policy-chat.html" class="btn btn-primary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              Ask HELIOS
+            </a>
+          </div>
+        </div>
+
+        <!-- Bloomberg-Style High Density Metric Tiles -->
+        <div class="dashboard-grid-stats">
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Compliance Health</span>
+              <span class="badge badge-success">Good</span>
+            </div>
+            <div class="metric-value" style="color: #34D399;">76 <span style="font-size: 0.9rem; color: var(--text-muted);">/ 100</span></div>
+            <div class="metric-sub">
+              <span>Risk: 28/100 (Low Tier)</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Upcoming Deadlines</span>
+              <span class="badge badge-danger">3 Days</span>
+            </div>
+            <div class="metric-value">4</div>
+            <div class="metric-sub">
+              <span style="color: #F87171;">GSTR-1 Due Oct 11</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Document Vault</span>
+              <span class="badge badge-info">Active</span>
+            </div>
+            <div class="metric-value" id="stat-doc-count">5</div>
+            <div class="metric-sub">
+              <span style="color: #FBBF24;">1 Expiring Soon</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Open Risk Items</span>
+              <span class="badge badge-warning">Review</span>
+            </div>
+            <div class="metric-value" style="color: #FBBF24;">4</div>
+            <div class="metric-sub">
+              <span>1 License · 1 DPDP · 1 POSH</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Relevant Rule Changes</span>
+              <span class="badge badge-brand">Gazettes</span>
+            </div>
+            <div class="metric-value">3</div>
+            <div class="metric-sub">
+              <span>2 High Impact Matched</span>
+            </div>
+          </div>
+
+          <div class="metric-tile">
+            <div class="metric-label">
+              <span>Pending Approvals</span>
+              <span class="badge badge-info">Statutory</span>
+            </div>
+            <div class="metric-value">2</div>
+            <div class="metric-sub">
+              <span>1 Action Due · 1 Review</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Dashboard Split Layout -->
+        <div class="dashboard-split-layout">
+
+          <!-- Left Column (Actions, Impact & Regulatory Intel) -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-6);">
+
+            <!-- SECTION: TODAY'S CRITICAL ACTIONS -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span style="color: #EF4444;">●</span>
+                  <span>TODAY — Prioritized Statutory Actions</span>
+                </div>
+                <span class="badge badge-danger">Action Required</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);" id="today-actions-list">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-sm); border-left: 3px solid #EF4444;">
+                  <div>
+                    <div style="font-weight: 600; font-size: var(--font-size-xs); color: var(--text-primary);">
+                      Monthly GSTR-1 Outward Supplies Filing Due (September 2026)
+                    </div>
+                    <div style="font-size: var(--font-size-2xs); color: var(--text-muted); margin-top: 2px;">
+                      Authority: CBIC / GSTN · Due: 11-Oct-2026 (in 3 days) · Turnover > ₹2 Cr requires valid IRN E-invoice data
+                    </div>
+                  </div>
+                  <a href="tax-center.html" class="btn btn-secondary btn-sm" style="flex-shrink: 0;">Prepare →</a>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-sm); border-left: 3px solid #F59E0B;">
+                  <div>
+                    <div style="font-weight: 600; font-size: var(--font-size-xs); color: var(--text-primary);">
+                      Karnataka Shops &amp; Commercial Establishments Renewal Window Open
+                    </div>
+                    <div style="font-size: var(--font-size-2xs); color: var(--text-muted); margin-top: 2px;">
+                      License KN-BLR-SE-2022-84912 expires 20-Nov-2026 (43 days left). Mandatory Form F headcount update (25 → 48) required.
+                    </div>
+                  </div>
+                  <a href="approvals.html" class="btn btn-secondary btn-sm" style="flex-shrink: 0;">Renew →</a>
+                </div>
+
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-sm); border-left: 3px solid #3B82F6;">
+                  <div>
+                    <div style="font-weight: 600; font-size: var(--font-size-xs); color: var(--text-primary);">
+                      Digital Personal Data Protection (DPDP) Privacy Policy Update
+                    </div>
+                    <div style="font-size: var(--font-size-2xs); color: var(--text-muted); margin-top: 2px;">
+                      MeitY operational rules take effect 01-Nov-2026. Customer privacy policy requires statutory 72h breach escalation clause.
+                    </div>
+                  </div>
+                  <a href="policy-analyzer.html" class="btn btn-secondary btn-sm" style="flex-shrink: 0;">Analyze →</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION: COMPANY IMPACT ENGINE -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-brand);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <span>Company-Specific Regulatory Impact</span>
+                </div>
+                <a href="impact.html" style="font-size: var(--font-size-2xs); color: var(--color-brand); font-weight: 600;">View Full Impact Matrix →</a>
+              </div>
+
+              <div id="company-impact-container" style="display: flex; flex-direction: column; gap: var(--space-4);">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+
+            <!-- SECTION: REGULATORY INTELLIGENCE (LATEST CIRCULARS) -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-accent-cyan);"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                  <span>Official Regulatory Intelligence Feed (Level 1 &amp; 2)</span>
+                </div>
+                <a href="regulations.html" style="font-size: var(--font-size-2xs); color: var(--color-brand); font-weight: 600;">Browse Circulars →</a>
+              </div>
+
+              <div id="regulations-feed-container" style="display: flex; flex-direction: column; gap: var(--space-3);">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column (Document Health, Risk Breakdown & Timeline) -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-6);">
+
+            <!-- DOCUMENT HEALTH -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Document Vault Status</div>
+                <a href="documents.html" class="btn btn-ghost btn-sm">Vault →</a>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);" id="doc-health-list">
+                <!-- Dynamically loaded -->
+              </div>
+            </div>
+
+            <!-- COMPANY RISK DRIVERS -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Explainable Risk Drivers</div>
+                <a href="risk.html" class="btn btn-ghost btn-sm">Details →</a>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);" id="risk-drivers-list">
+                <!-- Dynamically loaded -->
+              </div>
+            </div>
+
+            <!-- COMPLIANCE CALENDAR TIMELINE -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">30-Day Compliance Timeline</div>
+                <a href="calendar.html" class="btn btn-ghost btn-sm">Calendar →</a>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: var(--space-3);" id="timeline-list">
+                <!-- Dynamically loaded -->
+              </div>
+            </div>
+
+            <!-- LEGAL RESPONSIBILITY NOTICE -->
+            <div class="legal-disclaimer-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              <span>
+                HELIOS provides compliance intelligence and decision support. Discrepancies should be verified against official gazette publications with licensed professional advisors.
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadDashboardData();
+    });
+
+    async function loadDashboardData() {
+      try {
+        // Workspace
+        const wsRes = await fetch('/api/workspace');
+        const wsData = await wsRes.json();
+        if (wsData.success && wsData.workspace) {
+          const ws = wsData.workspace;
+          document.getElementById('dash-company-name').textContent = ws.name;
+          document.getElementById('dash-company-sub').textContent = 
+            `CIN: ${ws.cin || 'N/A'} · State: ${ws.registeredState} · Industry: ${ws.industry} · Turnover: ${ws.annualTurnoverRange}`;
+        }
+
+        // Impacts
+        const impRes = await fetch('/api/impact');
+        const impData = await impRes.json();
+        const impContainer = document.getElementById('company-impact-container');
+        if (impData.success && impData.impacts) {
+          impContainer.innerHTML = impData.impacts.slice(0, 2).map(imp => `
+            <div style="padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2);">
+                <span class="badge ${imp.impactLevel === 'HIGH' ? 'badge-danger' : 'badge-warning'}">${imp.relevance} · ${imp.impactLevel} IMPACT</span>
+                <span style="font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-family-mono);">${imp.authority}</span>
+              </div>
+              <div style="font-weight: 700; font-size: var(--font-size-xs); color: var(--text-primary); margin-bottom: var(--space-2);">
+                ${imp.regulationTitle}
+              </div>
+              <ul style="padding-left: var(--space-4); font-size: var(--font-size-2xs); color: var(--text-secondary); margin-bottom: var(--space-2);">
+                ${imp.reasons.map(r => `<li>${r}</li>`).join('')}
+              </ul>
+              <div style="font-size: var(--font-size-2xs); color: var(--color-brand); font-weight: 600;">
+                Action: ${imp.recommendedActions[0].action}
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Regulations Feed
+        const regRes = await fetch('/api/regulations');
+        const regData = await regRes.json();
+        const regContainer = document.getElementById('regulations-feed-container');
+        if (regData.success && regData.regulations) {
+          regContainer.innerHTML = regData.regulations.slice(0, 3).map(r => `
+            <div style="padding: var(--space-3); background-color: var(--bg-surface-secondary); border-radius: var(--radius-sm); border-left: 2px solid ${r.sourceTrustRank === 1 ? '#10B981' : '#06B6D4'};">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <span class="pill-trust-${r.sourceTrustRank}">${r.sourceLevel}</span>
+                <span style="font-size: 0.65rem; font-family: var(--font-family-mono); color: var(--text-muted);">Effective: ${r.effectiveDate}</span>
+              </div>
+              <div style="font-size: var(--font-size-xs); font-weight: 600; color: var(--text-primary); margin-top: var(--space-1);">
+                ${r.title}
+              </div>
+              <div style="font-size: var(--font-size-2xs); color: var(--text-secondary); margin-top: 2px; line-height: 1.4;">
+                ${r.summary.substring(0, 160)}...
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Documents Health
+        const docRes = await fetch('/api/documents');
+        const docData = await docRes.json();
+        const docContainer = document.getElementById('doc-health-list');
+        if (docData.success && docData.documents) {
+          document.getElementById('stat-doc-count').textContent = docData.documents.length;
+          docContainer.innerHTML = docData.documents.slice(0, 4).map(d => `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid var(--border-subtle);">
+              <div>
+                <div style="font-size: var(--font-size-xs); font-weight: 600; color: var(--text-primary);">${d.title}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-family-mono);">${d.category} · Valid: ${d.expirationDate}</div>
+              </div>
+              <span class="badge ${d.riskLevel === 'Low' ? 'badge-success' : d.riskLevel === 'Medium' ? 'badge-warning' : 'badge-danger'}">${d.status}</span>
+            </div>
+          `).join('');
+        }
+
+        // Risk Drivers
+        const riskRes = await fetch('/api/risk');
+        const riskData = await riskRes.json();
+        const riskContainer = document.getElementById('risk-drivers-list');
+        if (riskData.success && riskData.risk && riskData.risk.drivers) {
+          riskContainer.innerHTML = riskData.risk.drivers.slice(0, 3).map(drv => `
+            <div style="padding: var(--space-2); background-color: var(--bg-surface-secondary); border-radius: var(--radius-xs);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">
+                <span>${drv.category}</span>
+                <span style="color: #F87171; font-family: var(--font-family-mono);">${drv.scoreWeight} pts</span>
+              </div>
+              <div style="font-size: var(--font-size-2xs); color: var(--text-secondary); line-height: 1.4;">${drv.explanation}</div>
+            </div>
+          `).join('');
+        }
+
+        // Timeline
+        const calRes = await fetch('/api/calendar');
+        const calData = await calRes.json();
+        const timelineContainer = document.getElementById('timeline-list');
+        if (calData.success && calData.events) {
+          timelineContainer.innerHTML = calData.events.slice(0, 4).map(ev => `
+            <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+              <span style="font-family: var(--font-family-mono); font-size: 0.7rem; color: var(--color-brand); font-weight: 700; width: 75px; flex-shrink: 0;">${ev.date}</span>
+              <div>
+                <div style="font-size: var(--font-size-xs); font-weight: 600; color: var(--text-primary);">${ev.title}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">${ev.action}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+      } catch (e) {
+        console.error("Dashboard error:", e);
+      }
+    }
+  </script>
+</body>
+</html>
