@@ -713,6 +713,10 @@ app.get('/api/health', (req, res) => {
 
 // 2. List all documents (with metadata)
 app.get('/api/documents', (req, res) => {
+  // In serverless environments, reload latest documents if memory is empty
+  if (documents.length === 0) {
+    documents = loadDocuments();
+  }
   const list = documents.map(d => ({
     id: d.id,
     title: d.title,
@@ -725,6 +729,7 @@ app.get('/api/documents', (req, res) => {
     category: d.category || 'General Legal',
     hasClauses: !!(d.clauseAnalysis && d.clauseAnalysis.clauses && d.clauseAnalysis.clauses.length > 0),
     hasChecklist: !!(d.checklist && d.checklist.items && d.checklist.items.length > 0),
+    extractedText: d.extractedText || '',
     preview: (d.extractedText || '').substring(0, 180) + '...'
   }));
   res.json({
@@ -732,6 +737,31 @@ app.get('/api/documents', (req, res) => {
     count: list.length,
     documents: list
   });
+});
+
+// Sync documents between client and stateless serverless containers
+app.post('/api/documents/sync', (req, res) => {
+  try {
+    if (req.body && Array.isArray(req.body.documents)) {
+      req.body.documents.forEach(incoming => {
+        if (!incoming || !incoming.id) return;
+        const existingIdx = documents.findIndex(d => d.id === incoming.id);
+        if (existingIdx !== -1) {
+          documents[existingIdx] = { ...documents[existingIdx], ...incoming };
+        } else {
+          documents.unshift(incoming);
+        }
+      });
+      saveDocuments(documents);
+    }
+    res.json({
+      success: true,
+      count: documents.length,
+      documents
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Load sample document on demand (e.g. for demonstration)
@@ -771,7 +801,11 @@ app.all('/api/documents/clear-all', (req, res) => {
 
 // 3. Get single document with full extracted text and cached intelligence
 app.get('/api/documents/:id', (req, res) => {
-  const doc = documents.find(d => d.id === req.params.id);
+  let doc = documents.find(d => d.id === req.params.id);
+  if (!doc) {
+    documents = loadDocuments();
+    doc = documents.find(d => d.id === req.params.id);
+  }
   if (!doc) {
     return res.status(404).json({ success: false, error: 'Document not found.' });
   }
@@ -967,6 +1001,7 @@ app.post('/api/documents/upload', handleUploadFile, async (req, res) => {
         pageCount: newDoc.pageCount,
         wordCount: newDoc.wordCount,
         category: newDoc.category,
+        extractedText: newDoc.extractedText,
         preview: newDoc.extractedText.substring(0, 180) + '...'
       }
     });
@@ -1001,7 +1036,18 @@ app.delete('/api/documents/:id', (req, res) => {
    ========================================================================== */
 app.post('/api/documents/:id/clauses', async (req, res) => {
   try {
-    const doc = documents.find(d => d.id === req.params.id);
+    let doc = documents.find(d => d.id === req.params.id);
+    // If not found in this serverless container's memory, hydrate from request body
+    if (!doc && req.body && req.body.document && req.body.document.extractedText) {
+      doc = req.body.document;
+      documents.unshift(doc);
+      saveDocuments(documents);
+    }
+    // Secondary check: reload from disk
+    if (!doc) {
+      documents = loadDocuments();
+      doc = documents.find(d => d.id === req.params.id);
+    }
     if (!doc) {
       return res.status(404).json({ success: false, error: 'Document not found.' });
     }
@@ -1154,7 +1200,16 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    const doc = documents.find(d => d.id === documentId);
+    let doc = documents.find(d => d.id === documentId);
+    if (!doc && req.body && req.body.document && req.body.document.extractedText) {
+      doc = req.body.document;
+      documents.unshift(doc);
+      saveDocuments(documents);
+    }
+    if (!doc) {
+      documents = loadDocuments();
+      doc = documents.find(d => d.id === documentId);
+    }
     if (!doc) {
       return res.status(404).json({
         success: false,
@@ -1258,7 +1313,16 @@ Return a valid JSON object matching the requested schema.`;
    ========================================================================== */
 app.post('/api/documents/:id/checklist', async (req, res) => {
   try {
-    const doc = documents.find(d => d.id === req.params.id);
+    let doc = documents.find(d => d.id === req.params.id);
+    if (!doc && req.body && req.body.document && req.body.document.extractedText) {
+      doc = req.body.document;
+      documents.unshift(doc);
+      saveDocuments(documents);
+    }
+    if (!doc) {
+      documents = loadDocuments();
+      doc = documents.find(d => d.id === req.params.id);
+    }
     if (!doc) {
       return res.status(404).json({ success: false, error: 'Document not found.' });
     }

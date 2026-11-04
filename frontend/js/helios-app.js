@@ -355,22 +355,76 @@
     }
   }
 
-  // Load Documents from Backend
+  const VAULT_STORAGE_KEY = 'helios_vault_documents_v2';
+
+  function saveLocalVault(docs) {
+    try {
+      localStorage.setItem(VAULT_STORAGE_KEY, JSON.stringify(docs || []));
+    } catch (e) {
+      console.warn('[HELIOS] Local storage write notice:', e.message);
+    }
+  }
+
+  function getLocalVault() {
+    try {
+      const raw = localStorage.getItem(VAULT_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return [];
+  }
+
+  // Load Documents from Backend with Serverless Client-Side Fault-Tolerance
   async function loadDocuments() {
     try {
       const res = await fetch('/api/documents');
       const data = await res.json();
 
-      if (data.success && Array.isArray(data.documents)) {
-        state.documents = data.documents;
-        updateDocumentCounters();
-        renderDashboardRecent();
-        renderDocumentsList();
-        populateAssistantDocSelect();
+      const serverDocs = (data.success && Array.isArray(data.documents)) ? data.documents : [];
+      const localDocs = getLocalVault();
+
+      // Merge server documents and local documents
+      const mergedMap = new Map();
+      serverDocs.forEach(d => mergedMap.set(d.id, d));
+      localDocs.forEach(d => {
+        if (!mergedMap.has(d.id)) {
+          mergedMap.set(d.id, d);
+        } else {
+          // If server doc omitted extractedText, preserve local extracted text
+          const existing = mergedMap.get(d.id);
+          if (!existing.extractedText && d.extractedText) {
+            existing.extractedText = d.extractedText;
+          }
+        }
+      });
+
+      state.documents = Array.from(mergedMap.values());
+      saveLocalVault(state.documents);
+
+      // If local documents exist that serverless instance didn't have, quietly sync to backend
+      if (state.documents.length > serverDocs.length) {
+        fetch('/api/documents/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documents: state.documents })
+        }).catch(() => {});
       }
+
+      updateDocumentCounters();
+      renderDashboardRecent();
+      renderDocumentsList();
+      populateAssistantDocSelect();
     } catch (err) {
-      console.error('[HELIOS] Failed to load documents:', err);
-      showUploadAlert('Failed to connect to backend server. Make sure the server is running.', 'danger');
+      console.warn('[HELIOS] Failed to load documents from backend, using local vault:', err);
+      state.documents = getLocalVault();
+      updateDocumentCounters();
+      renderDashboardRecent();
+      renderDocumentsList();
+      populateAssistantDocSelect();
     }
   }
 
@@ -613,6 +667,17 @@
 
       showUploadAlert(`✓ Document "${data.document.title}" uploaded and parsed successfully!`, 'success');
 
+      // Add to local vault immediately so it is instantly available across serverless calls
+      if (data.document) {
+        const existingIdx = state.documents.findIndex(d => d.id === data.document.id);
+        if (existingIdx !== -1) {
+          state.documents[existingIdx] = data.document;
+        } else {
+          state.documents.unshift(data.document);
+        }
+        saveLocalVault(state.documents);
+      }
+
       // Refresh documents
       await loadDocuments();
 
@@ -665,15 +730,21 @@
       return;
     }
     try {
+      saveLocalVault([]);
+      state.documents = [];
+      updateDocumentCounters();
+      renderDashboardRecent();
+      renderDocumentsList();
+      populateAssistantDocSelect();
+
       const res = await fetch('/api/documents/clear-all', { method: 'POST' });
       const raw = await res.text();
       let data;
       try { data = JSON.parse(raw); } catch (e) { throw new Error(raw); }
       if (!res.ok || !data.success) throw new Error(data.error || 'Failed to clear vault.');
-      await loadDocuments();
       showUploadAlert('Vault cleared. 0 documents remaining.', 'info');
     } catch (err) {
-      showUploadAlert('Failed to clear vault: ' + err.message, 'danger');
+      showUploadAlert('Vault reset locally. ' + (err.message || ''), 'info');
     }
   }
 
@@ -702,28 +773,40 @@
 
   // View Document Full Extracted Text Modal
   async function openDocumentViewer(docId) {
-    try {
-      const res = await fetch(`/api/documents/${docId}`);
-      const data = await res.json();
+    let doc = state.documents.find(d => d.id === docId);
 
-      if (!data.success || !data.document) {
-        throw new Error(data.error || 'Document details could not be retrieved.');
+    // If doc not found locally or text missing, try fetching from backend
+    if (!doc || !doc.extractedText) {
+      try {
+        const res = await fetch(`/api/documents/${docId}`);
+        const data = await res.json();
+        if (data.success && data.document) {
+          doc = data.document;
+          const idx = state.documents.findIndex(d => d.id === docId);
+          if (idx !== -1) state.documents[idx] = doc;
+          saveLocalVault(state.documents);
+        }
+      } catch (err) {
+        console.warn('[HELIOS] Failed fetching single doc details:', err);
       }
-
-      state.activeDocument = data.document;
-
-      if (elements.modalTitle) elements.modalTitle.textContent = data.document.title;
-      if (elements.modalMeta) {
-        elements.modalMeta.textContent = `${data.document.filename} · ${data.document.fileType.toUpperCase()} · ${data.document.pageCount} pages · ${data.document.wordCount} words · Uploaded: ${data.document.uploadDate}`;
-      }
-      if (elements.modalContent) {
-        elements.modalContent.textContent = data.document.extractedText || 'No text extracted from this document.';
-      }
-
-      if (elements.textModal) elements.textModal.classList.add('open');
-    } catch (err) {
-      alert('Error loading document: ' + err.message);
     }
+
+    if (!doc) {
+      alert('Error: Document details could not be found.');
+      return;
+    }
+
+    state.activeDocument = doc;
+
+    if (elements.modalTitle) elements.modalTitle.textContent = doc.title;
+    if (elements.modalMeta) {
+      elements.modalMeta.textContent = `${doc.filename} · ${(doc.fileType || 'TXT').toUpperCase()} · ${doc.pageCount || 1} pages · ${doc.wordCount || 0} words · Uploaded: ${doc.uploadDate || 'Recent'}`;
+    }
+    if (elements.modalContent) {
+      elements.modalContent.textContent = doc.extractedText || 'No text extracted from this document.';
+    }
+
+    if (elements.textModal) elements.textModal.classList.add('open');
   }
 
   function closeTextModal() {
@@ -743,21 +826,21 @@
       return;
     }
 
+    // Immediately remove from local state and storage
+    state.documents = state.documents.filter(d => d.id !== docId);
+    saveLocalVault(state.documents);
+    if (state.selectedDocId === docId) {
+      state.selectedDocId = null;
+    }
+    updateDocumentCounters();
+    renderDashboardRecent();
+    renderDocumentsList();
+    populateAssistantDocSelect();
+
     try {
-      const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to delete document.');
-      }
-
-      if (state.selectedDocId === docId) {
-        state.selectedDocId = null;
-      }
-
-      await loadDocuments();
+      await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
     } catch (err) {
-      alert('Error deleting document: ' + err.message);
+      console.warn('[HELIOS] Note: Backend delete skipped or serverless cold instance:', err.message);
     }
   }
 
@@ -771,7 +854,11 @@
     openIntelModal(`Clause-to-Action Translator: ${doc.title}`, 'Analyzing document clauses, obligations, and risks...');
 
     try {
-      const res = await fetch(`/api/documents/${docId}/clauses`, { method: 'POST' });
+      const res = await fetch(`/api/documents/${docId}/clauses`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document: doc })
+      });
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -895,7 +982,11 @@
     openIntelModal(`Before-You-Sign Checklist: ${doc.title}`, 'Auditing standard commercial terms, liabilities, and renewal rules...');
 
     try {
-      const res = await fetch(`/api/documents/${docId}/checklist`, { method: 'POST' });
+      const res = await fetch(`/api/documents/${docId}/checklist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ document: doc })
+      });
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -1084,12 +1175,14 @@
     if (elements.chatSendBtn) elements.chatSendBtn.disabled = true;
 
     try {
+      const activeDoc = state.documents.find(d => d.id === state.selectedDocId);
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           documentId: state.selectedDocId,
-          question: question
+          question: question,
+          document: activeDoc
         })
       });
 
